@@ -1,0 +1,96 @@
+[
+  {
+    "id": "ipgeo_ex_ua",
+    "type": "tab",
+    "label": "IPGeo: User-Agent Parser",
+    "disabled": false,
+    "info": "Parse a User-Agent string into browser / OS / device. The inject sends a UA on msg.payload. In a real flow, point the node at msg.req.headers.user-agent behind an HTTP In node."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_ua",
+    "name": "\u2500\u2500 IPGeo: User-Agent Parser \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nParse a User-Agent string into browser / OS / device. The inject sends a UA on msg.payload. In a real flow, point the node at msg.req.headers.user-agent behind an HTTP In node.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_ua",
+    "name": "Parse iPhone UA",
+    "props": [
+      {
+        "p": "payload",
+        "v": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-useragent",
+    "name": "Parse UA",
+    "uaType": "msg",
+    "uaValue": "payload",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_ua",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_ua",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_ua",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_ua",
+    "name": "IPGeolocation API"
+  }
+]

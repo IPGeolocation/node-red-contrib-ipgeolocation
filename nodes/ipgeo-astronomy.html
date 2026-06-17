@@ -1,0 +1,242 @@
+<!-- ============================================================
+     ipgeo-astronomy.html
+     Astronomy (sun & moon) node
+     ============================================================ -->
+
+<script type="text/javascript">
+(function () {
+  'use strict';
+
+  RED.nodes.registerType('ipgeo-astronomy', {
+    category:    'IPGeolocation',
+    color:       '#5da0d0',
+    icon:        'font-awesome/fa-sun-o',
+    paletteLabel:'ipgeo astronomy',
+
+    defaults: {
+      name:           { value: '' },
+      server:         { value: '', type: 'ipgeo-config', required: true },
+      mode:           { value: 'coords' },
+      inputType:      { value: 'str' },
+      inputValue:     { value: '' },
+      latType:        { value: 'str' },
+      latValue:       { value: '' },
+      lngType:        { value: 'str' },
+      lngValue:       { value: '' },
+      dateType:       { value: 'str' },
+      dateValue:      { value: '' },
+      tzType:         { value: 'str' },
+      tzValue:        { value: '' },
+      elevationType:  { value: 'str' },
+      elevationValue: { value: '' },
+      langType:       { value: 'str' },
+      langValue:      { value: '' },
+      outputProp:     { value: 'payload' },
+      outputType:     { value: 'msg' },
+      twoOutputs:     { value: true },
+    },
+
+    inputs:  1,
+    outputs: 2,
+    outputLabels: function (idx) { return idx === 0 ? 'success' : 'error'; },
+
+    label: function () { return this.name || 'ipgeo astronomy'; },
+
+    oneditprepare: function () {
+      const node = this;
+
+      const typedOpts = { types: ['msg', 'flow', 'global', 'str'] };
+
+      $('#node-input-inputValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-inputType' });
+      $('#node-input-latValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-latType' });
+      $('#node-input-lngValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-lngType' });
+      $('#node-input-dateValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-dateType' });
+      $('#node-input-tzValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-tzType' });
+      $('#node-input-elevationValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-elevationType' });
+      $('#node-input-langValue').typedInput({ ...typedOpts, default: 'str', typeField: '#node-input-langType' });
+
+      $('#node-input-outputProp').typedInput({
+        default:   'msg',
+        typeField: '#node-input-outputType',
+        types:     ['msg', 'flow', 'global'],
+      });
+
+      $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+
+      // Show only the inputs relevant to the selected mode.
+      const placeholders = {
+        location: 'e.g. New York, USA',
+        ip:       'e.g. 8.8.8.8',
+      };
+      function refreshMode() {
+        const mode = $('#node-input-mode').val();
+        $('.ipgeo-coords-row').toggle(mode === 'coords');
+        $('.ipgeo-single-row').toggle(mode === 'location' || mode === 'ip');
+        if (placeholders[mode]) {
+          $('#node-input-inputValue').attr('placeholder', placeholders[mode]);
+        }
+      }
+      $('#node-input-mode').on('change', refreshMode);
+      refreshMode();
+    },
+
+    oneditsave: function () {
+      this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+    },
+  });
+}());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-astronomy">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo astronomy" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%"/>
+  </div>
+  <hr/>
+
+  <!-- Lookup mode -->
+  <div class="form-row">
+    <label for="node-input-mode"><i class="fa fa-crosshairs"></i>&nbsp;Look up by</label>
+    <select id="node-input-mode" style="width:70%">
+      <option value="coords">Coordinates (lat &amp; long)</option>
+      <option value="location">Location / city address</option>
+      <option value="ip">IP address</option>
+      <option value="auto">Caller IP (no input)</option>
+    </select>
+  </div>
+
+  <!-- Coordinates -->
+  <div class="form-row ipgeo-coords-row">
+    <label for="node-input-latValue"><i class="fa fa-arrows-v"></i>&nbsp;Latitude</label>
+    <input type="text" id="node-input-latValue" placeholder="e.g. 40.7128" style="width:70%"/>
+    <input type="hidden" id="node-input-latType"/>
+  </div>
+  <div class="form-row ipgeo-coords-row">
+    <label for="node-input-lngValue"><i class="fa fa-arrows-h"></i>&nbsp;Longitude</label>
+    <input type="text" id="node-input-lngValue" placeholder="e.g. -74.0060" style="width:70%"/>
+    <input type="hidden" id="node-input-lngType"/>
+  </div>
+
+  <!-- Single value (location / ip) -->
+  <div class="form-row ipgeo-single-row">
+    <label for="node-input-inputValue"><i class="fa fa-map-marker"></i>&nbsp;Value</label>
+    <input type="text" id="node-input-inputValue" style="width:70%"/>
+    <input type="hidden" id="node-input-inputType"/>
+  </div>
+
+  <hr/>
+
+  <!-- Optional date -->
+  <div class="form-row">
+    <label for="node-input-dateValue"><i class="fa fa-calendar"></i>&nbsp;Date</label>
+    <input type="text" id="node-input-dateValue" placeholder="YYYY-MM-DD (leave empty for today)" style="width:70%"/>
+    <input type="hidden" id="node-input-dateType"/>
+  </div>
+
+  <!-- Optional timezone -->
+  <div class="form-row">
+    <label for="node-input-tzValue"><i class="fa fa-clock-o"></i>&nbsp;Time zone</label>
+    <input type="text" id="node-input-tzValue" placeholder="e.g. America/New_York (optional)" style="width:70%"/>
+    <input type="hidden" id="node-input-tzType"/>
+    <div style="margin-top:4px;font-size:0.82em;color:#888;">
+      Converts all event times into this IANA time zone. Leave empty to use
+      the location's local time.
+    </div>
+  </div>
+
+  <!-- Optional elevation -->
+  <div class="form-row">
+    <label for="node-input-elevationValue"><i class="fa fa-mountain"></i>&nbsp;Elevation</label>
+    <input type="text" id="node-input-elevationValue" placeholder="metres, 0 to 10000 (optional)" style="width:70%"/>
+    <input type="hidden" id="node-input-elevationType"/>
+  </div>
+
+  <!-- Optional language -->
+  <div class="form-row">
+    <label for="node-input-langValue"><i class="fa fa-language"></i>&nbsp;Language</label>
+    <input type="text" id="node-input-langValue" placeholder="e.g. en, de, fr (optional, paid plans)" style="width:70%"/>
+    <input type="hidden" id="node-input-langType"/>
+  </div>
+
+  <hr/>
+  <div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%"/>
+    <input type="hidden" id="node-input-outputType"/>
+  </div>
+  <div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+      Use second output for errors
+    </label>
+  </div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-astronomy">
+  <p>
+    Retrieves sun and moon rise/set times, twilight phases, and positional
+    data via the <strong>IPGeolocation.io Astronomy API</strong>.
+  </p>
+
+  <h3>Look up by</h3>
+  <p>The location can be derived in one of four ways:</p>
+  <ul>
+    <li><b>Coordinates</b>: latitude + longitude.</li>
+    <li><b>Location / city address</b>: e.g. <code>New York, USA</code>.</li>
+    <li><b>IP address</b>: any IPv4 or IPv6 address.</li>
+    <li><b>Caller IP</b>: send no location and let the API use the caller's IP.</li>
+  </ul>
+  <p>
+    If more than one is supplied, the API prefers coordinates, then location,
+    then IP.
+  </p>
+
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt class="optional">Latitude / Longitude <span class="property-type">number | string</span></dt>
+    <dd>Decimal degrees. Required in <i>Coordinates</i> mode.</dd>
+    <dt class="optional">Value <span class="property-type">string</span></dt>
+    <dd>The address or IP. Required in <i>Location</i> or <i>IP</i> mode.</dd>
+    <dt class="optional">Date <span class="property-type">string</span></dt>
+    <dd><code>YYYY-MM-DD</code>. Defaults to today at the location.</dd>
+    <dt class="optional">Time zone <span class="property-type">string</span></dt>
+    <dd>IANA name; converts event times into this zone.</dd>
+    <dt class="optional">Elevation <span class="property-type">number | string</span></dt>
+    <dd>Metres above sea level, 0 to 10000. Defaults to 0.</dd>
+    <dt class="optional">Language <span class="property-type">string</span></dt>
+    <dd>Language for the <code>location</code> object (paid plans).</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>
+      Object with a <code>location</code> block and an <code>astronomy</code>
+      block. The latter holds <code>sunrise</code>, <code>sunset</code>,
+      <code>solar_noon</code>, <code>day_length</code>, <code>sun_altitude</code>,
+      <code>sun_azimuth</code>, <code>sun_distance</code>, <code>moonrise</code>,
+      <code>moonset</code>, <code>moon_phase</code>,
+      <code>moon_illumination_percentage</code>, plus <code>morning</code> and
+      <code>evening</code> twilight phases. When looked up by IP, an
+      <code>ip</code> field is also returned.
+    </dd>
+    <dt>ipgeo_credits <span class="property-type">number</span></dt>
+    <dd>Credits charged for the request (1 per astronomy lookup).</dd>
+  </dl>
+
+  <h3>References</h3>
+  <ul>
+    <li>
+      <a href="https://ipgeolocation.io/documentation/astronomy-api.html" target="_blank">
+        Astronomy API documentation
+      </a>
+    </li>
+  </ul>
+</script>

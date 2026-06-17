@@ -1,0 +1,297 @@
+<!-- ============================================================
+     ipgeo-asn.html
+     ASN lookup node (by IP or by ASN number) — editor template + help
+     ============================================================ -->
+
+<script type="text/javascript">
+    (function () {
+        'use strict';
+
+        // ── Include module list ────────────────────────────────────────────────────
+        const INCLUDE_MODULES = [
+            { id: 'inc-peers', val: 'peers', label: 'peers' },
+            { id: 'inc-downstreams', val: 'downstreams', label: 'downstreams' },
+            { id: 'inc-upstreams', val: 'upstreams', label: 'upstreams' },
+            { id: 'inc-routes', val: 'routes', label: 'routes' },
+            { id: 'inc-whois', val: 'whois_response', label: 'whois_response' },
+        ];
+
+        RED.nodes.registerType('ipgeo-asn', {
+            category: 'IPGeolocation',
+            color: '#7aa874',
+            icon: 'font-awesome/fa-sitemap',
+            paletteLabel: 'ipgeo asn',
+
+            defaults: {
+                name: { value: '' },
+                server: { value: '', type: 'ipgeo-config', required: true },
+                queryType: { value: 'auto' },
+                ipType: { value: 'str' },
+                ipValue: { value: '' },
+                asnType: { value: 'str' },
+                asnValue: { value: '' },
+                include: { value: '' },
+                fields: { value: '' },
+                excludes: { value: '' },
+                outputProp: { value: 'payload' },
+                outputType: { value: 'msg' },
+                twoOutputs: { value: true },
+            },
+
+            inputs: 1,
+            outputs: 2,   // [success, error]
+
+            outputLabels: function (idx) {
+                return idx === 0 ? 'success' : 'error';
+            },
+
+            label: function () {
+                return this.name || 'ipgeo asn';
+            },
+
+            labelStyle: function () {
+                return this.name ? 'node_label_italic' : '';
+            },
+
+            oneditprepare: function () {
+                const node = this;
+
+                // ── IP input — typed input widget ──────────────────────────────────
+                $('#node-input-ipValue').typedInput({
+                    default: 'str',
+                    typeField: '#node-input-ipType',
+                    types: ['msg', 'flow', 'global', 'str'],
+                });
+
+                // ── ASN input — typed input widget ─────────────────────────────────
+                $('#node-input-asnValue').typedInput({
+                    default: 'str',
+                    typeField: '#node-input-asnType',
+                    types: ['msg', 'flow', 'global', 'str'],
+                });
+
+                // ── Query type — show/hide the relevant row ─────────────────────────
+                function toggleQueryRows() {
+                    const qt = $('#node-input-queryType').val();
+                    $('#ipgeo-asn-ip-row').toggle(qt === 'ip');
+                    $('#ipgeo-asn-asn-row').toggle(qt === 'asn');
+                }
+                $('#node-input-queryType').on('change', toggleQueryRows);
+                toggleQueryRows();
+
+                // ── Include checkboxes — encode/decode comma list ──────────────────
+                const incList = (node.include || '').split(',').map(s => s.trim()).filter(Boolean);
+                INCLUDE_MODULES.forEach(function (mod) {
+                    const $cb = $('<input type="checkbox" style="margin-right:6px">')
+                        .prop('id', mod.id)
+                        .prop('checked', incList.includes(mod.val))
+                        .data('val', mod.val);
+                    const $label = $('<label>').attr('for', mod.id).text(mod.label)
+                        .css({ display: 'inline', fontWeight: 'normal', marginRight: '12px' });
+                    $('#ipgeo-asn-include-container').append($('<div>').css('display', 'inline-block').append($cb).append($label));
+                });
+
+                // ── Output property typed input ────────────────────────────────────
+                $('#node-input-outputProp').typedInput({
+                    default: 'msg',
+                    typeField: '#node-input-outputType',
+                    types: ['msg', 'flow', 'global'],
+                });
+
+                // ── Two outputs checkbox ───────────────────────────────────────────
+                $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+            },
+
+            oneditsave: function () {
+                // Collect include checkboxes back into a comma-separated string
+                const chosen = [];
+                INCLUDE_MODULES.forEach(function (mod) {
+                    if ($('#' + mod.id).prop('checked')) chosen.push(mod.val);
+                });
+                this.include = chosen.join(',');
+                this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+            },
+        });
+    }());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-asn">
+          <!-- Name -->
+<div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo asn" style="width:70%" />
+</div>
+
+<!-- Config node (shared with other ipgeo-* nodes) -->
+<div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%" />
+</div>
+
+<hr />
+
+<!-- Query mode -->
+<div class="form-row">
+    <label for="node-input-queryType"><i class="fa fa-search"></i>&nbsp;Lookup by</label>
+    <select id="node-input-queryType" style="width:70%">
+        <option value="auto">Auto-detect (caller's IP)</option>
+        <option value="ip">IP address</option>
+        <option value="asn">ASN number</option>
+    </select>
+</div>
+
+<!-- IP row (shown when queryType === 'ip') -->
+<div class="form-row" id="ipgeo-asn-ip-row">
+    <label for="node-input-ipValue" style="margin-left:20px"><i class="fa fa-globe"></i>&nbsp;IP Address</label>
+    <input type="text" id="node-input-ipValue" placeholder="e.g. 49.12.0.0 or msg.ip" style="width:60%" />
+    <input type="hidden" id="node-input-ipType" />
+</div>
+
+<!-- ASN row (shown when queryType === 'asn') -->
+<div class="form-row" id="ipgeo-asn-asn-row">
+    <label for="node-input-asnValue" style="margin-left:20px"><i class="fa fa-hashtag"></i>&nbsp;ASN</label>
+    <input type="text" id="node-input-asnValue" placeholder="e.g. 24940 or AS24940" style="width:60%" />
+    <input type="hidden" id="node-input-asnType" />
+</div>
+
+<hr />
+
+<!-- Include modules (checkboxes) -->
+<div class="form-row">
+    <label><i class="fa fa-plus-square"></i>&nbsp;Include</label>
+    <div id="ipgeo-asn-include-container" style="display:inline-block;width:70%;vertical-align:top;line-height:2em">
+    </div>
+</div>
+<!-- Hidden field intentionally omitted — include is built/read entirely
+               via the checkboxes above in oneditprepare/oneditsave. -->
+
+<hr />
+
+<!-- Fields & Excludes -->
+<div class="form-row">
+    <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+    <input type="text" id="node-input-fields" placeholder="e.g. asn.organization,asn.country" style="width:70%" />
+</div>
+<div class="form-row">
+    <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+    <input type="text" id="node-input-excludes" placeholder="e.g. asn.date_allocated,asn.allocation_status"
+        style="width:70%" />
+</div>
+
+<hr />
+
+<!-- Output property -->
+<div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%" />
+    <input type="hidden" id="node-input-outputType" />
+</div>
+
+<!-- Two outputs toggle -->
+<div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px" />
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+        Use second output for errors (instead of throwing to Catch node)
+    </label>
+</div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-asn">
+          <p>
+            Looks up Autonomous System Number (ASN) details — organization, country,
+            type, allocation date, RIR, and (optionally) peers, upstreams,
+            downstreams, routes, and raw WHOIS text — via
+            <strong>IPGeolocation.io v3 ASN API</strong>.
+          </p>
+        
+          <h3>Inputs</h3>
+          <dl class="message-properties">
+            <dt>payload <span class="property-type">any</span></dt>
+            <dd>Passed through unchanged.</dd>
+            <dt class="optional">ipgeo_include <span class="property-type">string</span></dt>
+            <dd>
+              Override the node's <em>Include</em> setting per-message.
+              Comma-separated list, e.g. <code>"peers,routes"</code>.
+            </dd>
+          </dl>
+        
+          <h3>Outputs</h3>
+          <ol class="node-ports">
+            <li>
+              <strong>Success</strong>
+              <dl class="message-properties">
+                <dt>payload <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ asn, ip? }</code> — <code>ip</code> is present only when
+                  looking up by IP address or auto-detected caller IP; it is
+                  omitted when looking up directly by ASN number.
+                  <code>asn</code> contains <code>as_number</code>,
+                  <code>organization</code>, <code>country</code>,
+                  <code>asn_name</code>, <code>type</code>, <code>domain</code>,
+                  <code>date_allocated</code>, <code>rir</code>,
+                  <code>allocation_status</code>, <code>num_of_ipv4_routes</code>,
+                  <code>num_of_ipv6_routes</code>, and (when included)
+                  <code>peers</code>, <code>downstreams</code>,
+                  <code>upstreams</code>, <code>routes</code>,
+                  <code>whois_response</code>.
+                </dd>
+                <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+                <dd>Credits consumed by this request (flat 1 credit per lookup).</dd>
+              </dl>
+            </li>
+            <li>
+              <strong>Error</strong> (when <em>Use second output</em> is checked)
+              <dl class="message-properties">
+                <dt>error <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ code, message, status, body }</code> — structured error object.
+                  Error codes include <code>AUTH_FAILED</code>, <code>RATE_LIMITED</code>,
+                  <code>TIMEOUT</code>, <code>BAD_REQUEST</code>, etc.
+                </dd>
+              </dl>
+            </li>
+          </ol>
+        
+          <h3>Details</h3>
+          <ul>
+            <li>
+              <em>Lookup by</em> chooses which single parameter is sent:
+              <strong>Auto-detect</strong> sends neither <code>ip</code> nor
+              <code>asn</code> and the API resolves the caller's IP;
+              <strong>IP address</strong> sends <code>ip</code>;
+              <strong>ASN number</strong> sends <code>asn</code> (the
+              <code>AS</code> prefix, if typed, is stripped automatically).
+            </li>
+            <li>
+              Use <em>Include</em> checkboxes to add <code>peers</code>,
+              <code>downstreams</code>, <code>upstreams</code>, <code>routes</code>,
+              and/or <code>whois_response</code> to the response. None of these
+              add extra credit cost — the lookup is always flat-rate.
+            </li>
+            <li>
+              <em>Fields</em> restricts the response to named fields
+              (e.g. <code>asn.organization,asn.country</code>). If both
+              <em>Include</em> and <em>Fields</em> are set, only <em>Include</em>
+              is applied by the API.
+            </li>
+            <li>
+              <em>Excludes</em> removes fields from the response
+              (e.g. <code>asn.date_allocated,asn.allocation_status</code>). The
+              top-level <code>ip</code> field cannot be excluded.
+            </li>
+            <li>Every successful lookup costs a flat <strong>1 credit</strong>.</li>
+            <li>Failed requests are retried up to 3 times with exponential back-off.</li>
+          </ul>
+        
+          <h3>References</h3>
+          <ul>
+            <li>
+              <a href="https://ipgeolocation.io/documentation/asn-api.html" target="_blank">
+                ASN API documentation
+              </a>
+            </li>
+          </ul>
+        </script>

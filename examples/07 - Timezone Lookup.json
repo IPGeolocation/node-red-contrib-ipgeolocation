@@ -1,0 +1,101 @@
+[
+  {
+    "id": "ipgeo_ex_tz",
+    "type": "tab",
+    "label": "IPGeo: Timezone",
+    "disabled": false,
+    "info": "Get timezone details. This example uses an IANA name (America/New_York); the node also supports lookup by IP, coordinates, IATA/ICAO and UN/LOCODE."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_tz",
+    "name": "\u2500\u2500 IPGeo: Timezone \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nGet timezone details. This example uses an IANA name (America/New_York); the node also supports lookup by IP, coordinates, IATA/ICAO and UN/LOCODE.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_tz",
+    "name": "New York time",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "date"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-timezone",
+    "name": "Timezone",
+    "mode": "tz",
+    "inputType": "str",
+    "inputValue": "America/New_York",
+    "latType": "str",
+    "latValue": "",
+    "lngType": "str",
+    "lngValue": "",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_tz",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_tz",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_tz",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_tz",
+    "name": "IPGeolocation API"
+  }
+]

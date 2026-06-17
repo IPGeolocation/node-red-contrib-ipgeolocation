@@ -1,0 +1,214 @@
+<!-- ============================================================
+     ipgeo-security.html
+     Single-IP threat/security lookup node — editor template + help
+     ============================================================ -->
+
+<script type="text/javascript">
+    (function () {
+        'use strict';
+
+        RED.nodes.registerType('ipgeo-security', {
+            category: 'IPGeolocation',
+            color: '#d08a5d',
+            icon: 'font-awesome/fa-shield',
+            paletteLabel: 'ipgeo security',
+
+            defaults: {
+                name: { value: '' },
+                server: { value: '', type: 'ipgeo-config', required: true },
+                ipType: { value: 'str' },
+                ipValue: { value: '' },
+                fields: { value: '' },
+                excludes: { value: '' },
+                outputProp: { value: 'payload' },
+                outputType: { value: 'msg' },
+                twoOutputs: { value: true },
+            },
+
+            inputs: 1,
+            outputs: 2,   // [success, error]
+
+            outputLabels: function (idx) {
+                return idx === 0 ? 'success' : 'error';
+            },
+
+            label: function () {
+                return this.name || 'ipgeo security';
+            },
+
+            labelStyle: function () {
+                return this.name ? 'node_label_italic' : '';
+            },
+
+            oneditprepare: function () {
+                const node = this;
+
+                // ── IP input — typed input widget ──────────────────────────────────
+                $('#node-input-ipValue').typedInput({
+                    default: 'str',
+                    typeField: '#node-input-ipType',
+                    types: ['msg', 'flow', 'global', 'str'],
+                });
+
+                // ── Output property typed input ────────────────────────────────────
+                $('#node-input-outputProp').typedInput({
+                    default: 'msg',
+                    typeField: '#node-input-outputType',
+                    types: ['msg', 'flow', 'global'],
+                });
+
+                // ── Two outputs checkbox ───────────────────────────────────────────
+                $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+            },
+
+            oneditsave: function () {
+                this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+            },
+        });
+    }());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-security">
+          <!-- Name -->
+<div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo security" style="width:70%" />
+</div>
+
+<!-- Config node (shared with ipgeo-lookup) -->
+<div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%" />
+    <input type="hidden" id="node-input-ipType" />
+</div>
+
+<hr />
+
+<!-- IP address input -->
+<div class="form-row">
+    <label for="node-input-ipValue"><i class="fa fa-globe"></i>&nbsp;IP Address</label>
+    <input type="text" id="node-input-ipValue" placeholder="Leave empty to detect caller IP" style="width:70%" />
+    <div style="margin-top:4px;font-size:0.82em;color:#888;">
+        IPv4 or IPv6 only — <strong>domain names are not supported</strong> by this
+        endpoint and will return an error. Leave empty to auto-detect the
+        caller's IP. You can also point to a msg/flow/global property.
+    </div>
+</div>
+
+<hr />
+
+<!-- Fields & Excludes -->
+<div class="form-row">
+    <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+    <input type="text" id="node-input-fields" placeholder="e.g. security.threat_score,security.is_vpn"
+        style="width:70%" />
+</div>
+<div class="form-row">
+    <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+    <input type="text" id="node-input-excludes" placeholder="e.g. security.is_tor,security.is_cloud_provider"
+        style="width:70%" />
+</div>
+
+<hr />
+
+<!-- Output property -->
+<div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%" />
+    <input type="hidden" id="node-input-outputType" />
+</div>
+
+<!-- Two outputs toggle -->
+<div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px" />
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+        Use second output for errors (instead of throwing to Catch node)
+    </label>
+</div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-security">
+          <p>
+            Returns threat/risk flags for a single IPv4 or IPv6 address via
+            <strong>IPGeolocation.io v3 Security API</strong>: VPN, proxy,
+            residential proxy, Tor, relay, bot, spam, known-attacker, and
+            cloud-provider signals, with confidence scores and provider names
+            where available.
+          </p>
+        
+          <h3>Inputs</h3>
+          <dl class="message-properties">
+            <dt>payload <span class="property-type">any</span></dt>
+            <dd>Passed through unchanged.</dd>
+          </dl>
+        
+          <h3>Outputs</h3>
+          <ol class="node-ports">
+            <li>
+              <strong>Success</strong>
+              <dl class="message-properties">
+                <dt>payload <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ ip, security }</code> where <code>security</code> contains
+                  <code>threat_score</code>, <code>is_tor</code>, <code>is_proxy</code>,
+                  <code>proxy_provider_names</code>, <code>proxy_confidence_score</code>,
+                  <code>proxy_last_seen</code>, <code>is_residential_proxy</code>,
+                  <code>is_vpn</code>, <code>vpn_provider_names</code>,
+                  <code>vpn_confidence_score</code>, <code>vpn_last_seen</code>,
+                  <code>is_relay</code>, <code>relay_provider_name</code>,
+                  <code>is_anonymous</code>, <code>is_known_attacker</code>,
+                  <code>is_bot</code>, <code>is_spam</code>,
+                  <code>is_cloud_provider</code>, <code>cloud_provider_name</code>.
+                </dd>
+                <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+                <dd>Credits consumed by this request (flat 2 credits per valid IP).</dd>
+              </dl>
+            </li>
+            <li>
+              <strong>Error</strong> (when <em>Use second output</em> is checked)
+              <dl class="message-properties">
+                <dt>error <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ code, message, status, body }</code> — structured error object.
+                  Error codes include <code>AUTH_FAILED</code>, <code>RATE_LIMITED</code>,
+                  <code>TIMEOUT</code>, <code>BAD_REQUEST</code>, etc.
+                </dd>
+              </dl>
+            </li>
+          </ol>
+        
+          <h3>Details</h3>
+          <ul>
+            <li>Leave <em>IP Address</em> empty to look up the caller's IP address.</li>
+            <li>
+              <strong>Domain names are not accepted</strong> — only IPv4/IPv6
+              addresses. Passing a domain returns a 401 from the API.
+            </li>
+            <li>Every successful lookup costs a flat <strong>2 credits</strong>, regardless of fields/excludes used.</li>
+            <li>
+              <em>Fields</em> restricts the response to named fields
+              (e.g. <code>security.threat_score</code>).
+            </li>
+            <li>
+              <em>Excludes</em> removes fields from the <code>security</code> object
+              (e.g. <code>security.is_tor,security.is_cloud_provider</code>). The
+              top-level <code>ip</code> field is always present and cannot be excluded.
+            </li>
+            <li>
+              Bogon/private/malformed IPs are rejected with HTTP 423 and are not billed.
+            </li>
+            <li>Failed requests are retried up to 3 times with exponential back-off.</li>
+          </ul>
+        
+          <h3>References</h3>
+          <ul>
+            <li>
+              <a href="https://ipgeolocation.io/documentation/ip-security-api.html" target="_blank">
+                IP Security API documentation
+              </a>
+            </li>
+          </ul>
+        </script>

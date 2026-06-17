@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ipgeo_ex_asn",
+    "type": "tab",
+    "label": "IPGeo: ASN Lookup",
+    "disabled": false,
+    "info": "Look up Autonomous System details by ASN (here AS15169, Google). Switch the node's Query mode to look up by IP or to auto-detect the caller IP."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_asn",
+    "name": "\u2500\u2500 IPGeo: ASN Lookup \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nLook up Autonomous System details by ASN (here AS15169, Google). Switch the node's Query mode to look up by IP or to auto-detect the caller IP.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_asn",
+    "name": "Lookup AS15169",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "date"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-asn",
+    "name": "ASN Lookup",
+    "queryType": "asn",
+    "ipType": "str",
+    "ipValue": "",
+    "asnType": "str",
+    "asnValue": "AS15169",
+    "include": "",
+    "fields": "",
+    "excludes": "",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_asn",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_asn",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_asn",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_asn",
+    "name": "IPGeolocation API"
+  }
+]

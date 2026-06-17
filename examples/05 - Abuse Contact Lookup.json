@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ipgeo_ex_abuse",
+    "type": "tab",
+    "label": "IPGeo: Abuse Contact",
+    "disabled": false,
+    "info": "Look up the network abuse contact (emails, phone, organisation) for an IP \u2014 useful for automated abuse reporting."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_abuse",
+    "name": "\u2500\u2500 IPGeo: Abuse Contact \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nLook up the network abuse contact (emails, phone, organisation) for an IP \u2014 useful for automated abuse reporting.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_abuse",
+    "name": "Lookup 1.0.0.1",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "date"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-abuse",
+    "name": "Abuse Contact",
+    "ipType": "str",
+    "ipValue": "1.0.0.1",
+    "fields": "",
+    "excludes": "",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_abuse",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_abuse",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_abuse",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_abuse",
+    "name": "IPGeolocation API"
+  }
+]

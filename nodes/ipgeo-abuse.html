@@ -1,0 +1,203 @@
+<!-- ============================================================
+     ipgeo-abuse.html
+     Single-IP abuse contact lookup node — editor template + help
+     ============================================================ -->
+
+     <script type="text/javascript">
+        (function () {
+          'use strict';
+        
+          RED.nodes.registerType('ipgeo-abuse', {
+            category:    'IPGeolocation',
+            color:       '#c2554f',
+            icon:        'font-awesome/fa-envelope',
+            paletteLabel:'ipgeo abuse',
+        
+            defaults: {
+              name:       { value: '' },
+              server:     { value: '', type: 'ipgeo-config', required: true },
+              ipType:     { value: 'str' },
+              ipValue:    { value: '' },
+              fields:     { value: '' },
+              excludes:   { value: '' },
+              outputProp: { value: 'payload' },
+              outputType: { value: 'msg' },
+              twoOutputs: { value: true },
+            },
+        
+            inputs:  1,
+            outputs: 2,   // [success, error]
+        
+            outputLabels: function (idx) {
+              return idx === 0 ? 'success' : 'error';
+            },
+        
+            label: function () {
+              return this.name || 'ipgeo abuse';
+            },
+        
+            labelStyle: function () {
+              return this.name ? 'node_label_italic' : '';
+            },
+        
+            oneditprepare: function () {
+              const node = this;
+        
+              // ── IP input — typed input widget ──────────────────────────────────
+              $('#node-input-ipValue').typedInput({
+                default:   'str',
+                typeField: '#node-input-ipType',
+                types:     ['msg', 'flow', 'global', 'str'],
+              });
+        
+              // ── Output property typed input ────────────────────────────────────
+              $('#node-input-outputProp').typedInput({
+                default:   'msg',
+                typeField: '#node-input-outputType',
+                types:     ['msg', 'flow', 'global'],
+              });
+        
+              // ── Two outputs checkbox ───────────────────────────────────────────
+              $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+            },
+        
+            oneditsave: function () {
+              this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+            },
+          });
+        }());
+        </script>
+        
+        <!-- ── Edit template ── -->
+        <script type="text/html" data-template-name="ipgeo-abuse">
+          <!-- Name -->
+          <div class="form-row">
+            <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+            <input type="text" id="node-input-name" placeholder="ipgeo abuse" style="width:70%"/>
+          </div>
+        
+          <!-- Config node (shared with ipgeo-lookup / ipgeo-security) -->
+          <div class="form-row">
+            <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+            <input type="text" id="node-input-server" style="width:70%"/>
+            <input type="hidden" id="node-input-ipType"/>
+          </div>
+        
+          <hr/>
+        
+          <!-- IP address input -->
+          <div class="form-row">
+            <label for="node-input-ipValue"><i class="fa fa-globe"></i>&nbsp;IP Address</label>
+            <input type="text" id="node-input-ipValue" placeholder="Leave empty to detect caller IP" style="width:70%"/>
+            <div style="margin-top:4px;font-size:0.82em;color:#888;">
+              IPv4 or IPv6 only. Leave empty to auto-detect the caller's IP. You
+              can also point this to a msg/flow/global property.
+            </div>
+          </div>
+        
+          <hr/>
+        
+          <!-- Fields & Excludes -->
+          <div class="form-row">
+            <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+            <input type="text" id="node-input-fields" placeholder="e.g. abuse.emails,abuse.phone_numbers" style="width:70%"/>
+          </div>
+          <div class="form-row">
+            <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+            <input type="text" id="node-input-excludes" placeholder="e.g. abuse.address" style="width:70%"/>
+          </div>
+        
+          <hr/>
+        
+          <!-- Output property -->
+          <div class="form-row">
+            <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+            <input type="text" id="node-input-outputProp" style="width:70%"/>
+            <input type="hidden" id="node-input-outputType"/>
+          </div>
+        
+          <!-- Two outputs toggle -->
+          <div class="form-row">
+            <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+            <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+            <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+              Use second output for errors (instead of throwing to Catch node)
+            </label>
+          </div>
+        </script>
+        
+        <!-- ── Help panel ── -->
+        <script type="text/html" data-help-name="ipgeo-abuse">
+          <p>
+            Looks up abuse-reporting contact details for a single IPv4 or IPv6
+            address via <strong>IPGeolocation.io v3 Abuse Contact API</strong>:
+            responsible organization, abuse-handling role, contact emails, phone
+            numbers, and registered address.
+          </p>
+        
+          <h3>Inputs</h3>
+          <dl class="message-properties">
+            <dt>payload <span class="property-type">any</span></dt>
+            <dd>Passed through unchanged.</dd>
+          </dl>
+        
+          <h3>Outputs</h3>
+          <ol class="node-ports">
+            <li>
+              <strong>Success</strong>
+              <dl class="message-properties">
+                <dt>payload <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ ip, abuse }</code> where <code>abuse</code> contains
+                  <code>route</code>, <code>country</code>, <code>name</code>,
+                  <code>organization</code>, <code>kind</code>
+                  (<code>group</code> | <code>individual</code>),
+                  <code>address</code>, <code>emails</code> (array),
+                  and <code>phone_numbers</code> (array).
+                </dd>
+                <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+                <dd>Credits consumed by this request (flat 1 credit per lookup).</dd>
+              </dl>
+            </li>
+            <li>
+              <strong>Error</strong> (when <em>Use second output</em> is checked)
+              <dl class="message-properties">
+                <dt>error <span class="property-type">object</span></dt>
+                <dd>
+                  <code>{ code, message, status, body }</code> — structured error object.
+                  Error codes include <code>AUTH_FAILED</code>, <code>RATE_LIMITED</code>,
+                  <code>TIMEOUT</code>, <code>BAD_REQUEST</code>, etc.
+                </dd>
+              </dl>
+            </li>
+          </ol>
+        
+          <h3>Details</h3>
+          <ul>
+            <li>Leave <em>IP Address</em> empty to look up the caller's IP address.</li>
+            <li>Every successful lookup costs a flat <strong>1 credit</strong>.</li>
+            <li>
+              <em>Fields</em> restricts the response to named fields
+              (e.g. <code>abuse.emails</code>).
+            </li>
+            <li>
+              <em>Excludes</em> removes fields from the <code>abuse</code> object
+              (e.g. <code>abuse.address</code>). The top-level <code>ip</code>
+              field cannot be excluded.
+            </li>
+            <li>Any field may legitimately come back empty if the registry has no data for it.</li>
+            <li>
+              Bogon/private IPs are rejected with HTTP 423 and are not billed.
+            </li>
+            <li>Failed requests are retried up to 3 times with exponential back-off.</li>
+          </ul>
+        
+          <h3>References</h3>
+          <ul>
+            <li>
+              <a href="https://ipgeolocation.io/documentation/ip-abuse-contact-api.html" target="_blank">
+                IP Abuse Contact API documentation
+              </a>
+            </li>
+          </ul>
+        </script>

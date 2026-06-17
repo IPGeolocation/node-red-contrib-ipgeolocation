@@ -1,0 +1,109 @@
+[
+  {
+    "id": "ipgeo_ex_astro",
+    "type": "tab",
+    "label": "IPGeo: Astronomy",
+    "disabled": false,
+    "info": "Sun & moon rise/set and positional data for a latitude/longitude (here London). Optionally set a date (YYYY-MM-DD) and timezone on the node."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_astro",
+    "name": "\u2500\u2500 IPGeo: Astronomy \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nSun & moon rise/set and positional data for a latitude/longitude (here London). Optionally set a date (YYYY-MM-DD) and timezone on the node.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_astro",
+    "name": "London today",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "date"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-astronomy",
+    "name": "Sun & Moon",
+    "mode": "coords",
+    "inputType": "str",
+    "inputValue": "",
+    "latType": "str",
+    "latValue": "51.5074",
+    "lngType": "str",
+    "lngValue": "-0.1278",
+    "dateType": "str",
+    "dateValue": "",
+    "tzType": "str",
+    "tzValue": "",
+    "elevationType": "str",
+    "elevationValue": "",
+    "langType": "str",
+    "langValue": "",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_astro",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_astro",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_astro",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_astro",
+    "name": "IPGeolocation API"
+  }
+]

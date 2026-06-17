@@ -1,0 +1,96 @@
+[
+  {
+    "id": "ipgeo_ex_bulksec",
+    "type": "tab",
+    "label": "IPGeo: Bulk Security",
+    "disabled": false,
+    "info": "Threat intelligence for many IPs in one request. Invalid/private IPs come back as { message } entries and are counted on msg.ipgeo_invalid_count."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_bulksec",
+    "name": "\u2500\u2500 IPGeo: Bulk Security \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nThreat intelligence for many IPs in one request. Invalid/private IPs come back as { message } entries and are counted on msg.ipgeo_invalid_count.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_bulksec",
+    "name": "Send 2 IPs",
+    "props": [
+      {
+        "p": "payload",
+        "v": "[\"1.0.0.1\",\"8.8.8.8\"]",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-bulk-security",
+    "name": "Bulk Security",
+    "fields": "",
+    "excludes": "",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_bulksec",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_bulksec",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_bulksec",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_bulksec",
+    "name": "IPGeolocation API"
+  }
+]

@@ -1,0 +1,158 @@
+<!-- ============================================================
+     ipgeo-bulk.html
+     Bulk IP geolocation lookup node
+     ============================================================ -->
+
+<script type="text/javascript">
+(function () {
+  'use strict';
+
+  RED.nodes.registerType('ipgeo-bulk', {
+    category:    'IPGeolocation',
+    color:       '#5da0d0',
+    icon:        'font-awesome/fa-list',
+    paletteLabel:'ipgeo bulk',
+
+    defaults: {
+      name:       { value: '' },
+      server:     { value: '', type: 'ipgeo-config', required: true },
+      include:    { value: '' },
+      fields:     { value: '' },
+      excludes:   { value: '' },
+      lang:       { value: 'en' },
+      outputProp: { value: 'payload' },
+      outputType: { value: 'msg' },
+      twoOutputs: { value: true },
+    },
+
+    inputs:  1,
+    outputs: 2,
+
+    outputLabels: function (idx) {
+      return idx === 0 ? 'success (array)' : 'error';
+    },
+
+    label: function () {
+      return this.name || 'ipgeo bulk';
+    },
+
+    oneditprepare: function () {
+      const node = this;
+
+      $('#node-input-outputProp').typedInput({
+        default:   'msg',
+        typeField: '#node-input-outputType',
+        types:     ['msg', 'flow', 'global'],
+      });
+
+      $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+    },
+
+    oneditsave: function () {
+      this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+    },
+  });
+}());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-bulk">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo bulk" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%"/>
+  </div>
+  <hr/>
+  <div class="form-row">
+    <label for="node-input-include"><i class="fa fa-plus-square"></i>&nbsp;Include</label>
+    <input type="text" id="node-input-include"
+           placeholder="e.g. security,abuse  (comma-separated)" style="width:70%"/>
+    <div style="margin-top:4px;font-size:0.82em;color:#888;">
+      security (+2 credits each), abuse (+1), user_agent, geo_accuracy, dma_code,
+      hostname, liveHostname, hostnameFallbackLive
+    </div>
+  </div>
+  <div class="form-row">
+    <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+    <input type="text" id="node-input-fields"
+           placeholder="e.g. location.city,currency" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+    <input type="text" id="node-input-excludes"
+           placeholder="e.g. currency,time_zone" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-lang"><i class="fa fa-language"></i>&nbsp;Language</label>
+    <select id="node-input-lang" style="width:70%">
+      <option value="en">English (en)</option>
+      <option value="de">German (de)</option>
+      <option value="ru">Russian (ru)</option>
+      <option value="ja">Japanese (ja)</option>
+      <option value="fr">French (fr)</option>
+      <option value="cn">Chinese Simplified (cn)</option>
+      <option value="es">Spanish (es)</option>
+      <option value="cs">Czech (cs)</option>
+      <option value="it">Italian (it)</option>
+      <option value="ko">Korean (ko)</option>
+      <option value="fa">Persian (fa)</option>
+      <option value="pt">Portuguese (pt)</option>
+    </select>
+  </div>
+  <hr/>
+  <div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%"/>
+    <input type="hidden" id="node-input-outputType"/>
+  </div>
+  <div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+      Use second output for errors
+    </label>
+  </div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-bulk">
+  <p>
+    Performs a <strong>bulk geolocation lookup</strong> for up to <strong>50,000</strong>
+    IPv4/IPv6 addresses or domain names in a single HTTP POST request.
+  </p>
+
+  <h3>Input</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">array | string</span></dt>
+    <dd>
+      An array of IP/domain strings, e.g. <code>["1.2.3.4","2.3.4.5"]</code>.
+      A comma-separated string is also accepted and will be auto-split.
+    </dd>
+    <dt class="optional">ipgeo_include <span class="property-type">string</span></dt>
+    <dd>Per-message override for the <em>Include</em> setting.</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">array</span></dt>
+    <dd>
+      Array of result objects in the same order as the input.
+      Invalid/private IPs return <code>{ message: "..." }</code>
+      instead of geolocation data.
+    </dd>
+    <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+    <dd>Total credits consumed.</dd>
+  </dl>
+
+  <h3>References</h3>
+  <ul>
+    <li>
+      <a href="https://ipgeolocation.io/documentation/ip-location-api.html" target="_blank">
+        Bulk IP Lookup documentation
+      </a>
+    </li>
+  </ul>
+</script>

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ipgeo_ex_lookup",
+    "type": "tab",
+    "label": "IPGeo: Single IP Lookup",
+    "disabled": false,
+    "info": "Geolocate a single IP address (or domain). The inject sends an IP on msg.payload; the lookup node reads it and returns full geolocation data."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_lookup",
+    "name": "\u2500\u2500 IPGeo: Single IP Lookup \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nGeolocate a single IP address (or domain). The inject sends an IP on msg.payload; the lookup node reads it and returns full geolocation data.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_lookup",
+    "name": "Lookup 8.8.8.8",
+    "props": [
+      {
+        "p": "payload",
+        "v": "8.8.8.8",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-lookup",
+    "name": "IP Lookup",
+    "ipType": "msg",
+    "ipValue": "payload",
+    "include": "",
+    "fields": "",
+    "excludes": "",
+    "lang": "en",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "uaHeader": false,
+    "uaProp": "req.headers.user-agent",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_lookup",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_lookup",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_lookup",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_lookup",
+    "name": "IPGeolocation API"
+  }
+]

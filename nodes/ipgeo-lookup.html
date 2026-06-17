@@ -1,0 +1,300 @@
+<!-- ============================================================
+     ipgeo-lookup.html
+     Single-IP geolocation lookup node — editor template + help
+     ============================================================ -->
+
+<script type="text/javascript">
+(function () {
+  'use strict';
+
+  // ── Helper: populate a select from an options array ────────────────────────
+  function populateSelect(selectId, options, currentVal) {
+    const $sel = $(selectId).empty();
+    options.forEach(function (opt) {
+      $sel.append($('<option>').val(opt.value).text(opt.label));
+    });
+    if (currentVal !== undefined) $sel.val(currentVal);
+  }
+
+  // ── Include module list ────────────────────────────────────────────────────
+  const INCLUDE_MODULES = [
+    { id: 'inc-security',   val: 'security',             label: 'security  (+2 credits)'   },
+    { id: 'inc-abuse',      val: 'abuse',                label: 'abuse  (+1 credit)'        },
+    { id: 'inc-user_agent', val: 'user_agent',           label: 'user_agent'                },
+    { id: 'inc-geo_acc',    val: 'geo_accuracy',         label: 'geo_accuracy'              },
+    { id: 'inc-dma',        val: 'dma_code',             label: 'dma_code (US only)'        },
+    { id: 'inc-host',       val: 'hostname',             label: 'hostname (DB lookup)'      },
+    { id: 'inc-livehost',   val: 'liveHostname',         label: 'liveHostname (DNS lookup)' },
+    { id: 'inc-fallback',   val: 'hostnameFallbackLive', label: 'hostnameFallbackLive'      },
+  ];
+
+  RED.nodes.registerType('ipgeo-lookup', {
+    category:    'IPGeolocation',
+    color:       '#5da0d0',
+    icon:        'font-awesome/fa-map-marker',
+    paletteLabel:'ipgeo lookup',
+
+    defaults: {
+      name:       { value: '' },
+      server:     { value: '', type: 'ipgeo-config', required: true },
+      ipType:     { value: 'str' },
+      ipValue:    { value: '' },
+      include:    { value: '' },
+      fields:     { value: '' },
+      excludes:   { value: '' },
+      lang:       { value: 'en' },
+      outputProp: { value: 'payload' },
+      outputType: { value: 'msg' },
+      uaHeader:   { value: false },
+      uaProp:     { value: 'req.headers.user-agent' },
+      twoOutputs: { value: true },
+    },
+
+    inputs:  1,
+    outputs: 2,   // [success, error]
+
+    outputLabels: function (idx) {
+      return idx === 0 ? 'success' : 'error';
+    },
+
+    label: function () {
+      return this.name || 'ipgeo lookup';
+    },
+
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : '';
+    },
+
+    oneditprepare: function () {
+      const node = this;
+
+      // ── IP input — typed input widget ──────────────────────────────────
+      $('#node-input-ipValue').typedInput({
+        default:   'str',
+        typeField: '#node-input-ipType',
+        types:     ['msg', 'flow', 'global', 'str'],
+      });
+
+      // ── Include checkboxes — encode/decode comma list ──────────────────
+      const incList = (node.include || '').split(',').map(s => s.trim()).filter(Boolean);
+      INCLUDE_MODULES.forEach(function (mod) {
+        const $cb = $('<input type="checkbox" style="margin-right:6px">')
+          .prop('id', mod.id)
+          .prop('checked', incList.includes(mod.val))
+          .data('val', mod.val);
+        const $label = $('<label>').attr('for', mod.id).text(mod.label)
+          .css({ display: 'inline', fontWeight: 'normal', marginRight: '12px' });
+        $('#ipgeo-include-container').append($('<div>').css('display','inline-block').append($cb).append($label));
+      });
+
+      // ── Output property typed input ────────────────────────────────────
+      $('#node-input-outputProp').typedInput({
+        default:   'msg',
+        typeField: '#node-input-outputType',
+        types:     ['msg', 'flow', 'global'],
+      });
+
+      // ── UA header toggle ───────────────────────────────────────────────
+      function toggleUARow() {
+        if ($('#node-input-uaHeader').prop('checked')) {
+          $('#ipgeo-ua-row').show();
+        } else {
+          $('#ipgeo-ua-row').hide();
+        }
+      }
+      $('#node-input-uaHeader').prop('checked', node.uaHeader).on('change', toggleUARow);
+      toggleUARow();
+
+      // ── Two outputs checkbox ───────────────────────────────────────────
+      $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+    },
+
+    oneditsave: function () {
+      // Collect include checkboxes back into a comma-separated string
+      const chosen = [];
+      INCLUDE_MODULES.forEach(function (mod) {
+        if ($('#' + mod.id).prop('checked')) chosen.push(mod.val);
+      });
+      this.include    = chosen.join(',');
+      this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+    },
+  });
+}());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-lookup">
+  <!-- Name -->
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo lookup" style="width:70%"/>
+  </div>
+
+  <!-- Config node -->
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%"/>
+    <input type="hidden" id="node-input-ipType"/>
+  </div>
+
+  <hr/>
+
+  <!-- IP address input -->
+  <div class="form-row">
+    <label for="node-input-ipValue"><i class="fa fa-globe"></i>&nbsp;IP / Domain</label>
+    <input type="text" id="node-input-ipValue" placeholder="Leave empty to detect caller IP" style="width:70%"/>
+    <div style="margin-top:4px;font-size:0.82em;color:#888;">
+      IPv4, IPv6, or domain name. Leave empty to auto-detect the caller's IP.
+      You can also point to a msg property (e.g. <code>msg.ip</code>).
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- Include modules (checkboxes) -->
+  <div class="form-row">
+    <label><i class="fa fa-plus-square"></i>&nbsp;Include</label>
+    <div id="ipgeo-include-container" style="display:inline-block;width:70%;vertical-align:top;line-height:2em"></div>
+  </div>
+  <hr/>
+
+  <!-- Fields & Excludes -->
+  <div class="form-row">
+    <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+    <input type="text" id="node-input-fields" placeholder="e.g. location,asn.organization (comma-separated)" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+    <input type="text" id="node-input-excludes" placeholder="e.g. currency,location.continent_code" style="width:70%"/>
+  </div>
+
+  <!-- Language -->
+  <div class="form-row">
+    <label for="node-input-lang"><i class="fa fa-language"></i>&nbsp;Language</label>
+    <select id="node-input-lang" style="width:70%">
+      <option value="en">English (en)</option>
+      <option value="de">German (de)</option>
+      <option value="ru">Russian (ru)</option>
+      <option value="ja">Japanese (ja)</option>
+      <option value="fr">French (fr)</option>
+      <option value="cn">Chinese Simplified (cn)</option>
+      <option value="es">Spanish (es)</option>
+      <option value="cs">Czech (cs)</option>
+      <option value="it">Italian (it)</option>
+      <option value="ko">Korean (ko)</option>
+      <option value="fa">Persian (fa)</option>
+      <option value="pt">Portuguese (pt)</option>
+    </select>
+  </div>
+
+  <hr/>
+
+  <!-- Forward UA header -->
+  <div class="form-row">
+    <label><i class="fa fa-desktop"></i>&nbsp;User-Agent</label>
+    <input type="checkbox" id="node-input-uaHeader" style="width:auto;margin-right:6px"/>
+    <label for="node-input-uaHeader" style="display:inline;font-weight:normal">
+      Forward User-Agent header from msg property
+    </label>
+  </div>
+  <div class="form-row" id="ipgeo-ua-row" style="display:none">
+    <label for="node-input-uaProp" style="margin-left:20px">msg path</label>
+    <input type="text" id="node-input-uaProp" placeholder="req.headers.user-agent" style="width:60%"/>
+  </div>
+
+  <hr/>
+
+  <!-- Output property -->
+  <div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%"/>
+    <input type="hidden" id="node-input-outputType"/>
+  </div>
+
+  <!-- Two outputs toggle -->
+  <div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+      Use second output for errors (instead of throwing to Catch node)
+    </label>
+  </div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-lookup">
+  <p>
+    Looks up geolocation, network, ASN, timezone, currency, security, and
+    abuse information for a single IPv4/IPv6 address or domain via
+    <strong>IPGeolocation.io v3 API</strong>.
+  </p>
+
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">any</span></dt>
+    <dd>Passed through unchanged.</dd>
+    <dt class="optional">ipgeo_include <span class="property-type">string</span></dt>
+    <dd>
+      Override the node's <em>Include</em> setting per-message.
+      Comma-separated list, e.g. <code>"security,abuse"</code>.
+    </dd>
+  </dl>
+
+  <h3>Outputs</h3>
+  <ol class="node-ports">
+    <li>
+      <strong>Success</strong>
+      <dl class="message-properties">
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>
+          Full IPGeolocation.io response. Top-level keys include
+          <code>ip</code>, <code>location</code>, <code>asn</code>,
+          <code>time_zone</code>, <code>currency</code>, <code>company</code>,
+          <code>network</code>, and optionally <code>security</code>,
+          <code>abuse</code>, <code>user_agent</code>, <code>hostname</code>.
+        </dd>
+        <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+        <dd>Credits consumed by this request (from <code>X-Credits-Charged</code> header).</dd>
+      </dl>
+    </li>
+    <li>
+      <strong>Error</strong> (when <em>Use second output</em> is checked)
+      <dl class="message-properties">
+        <dt>error <span class="property-type">object</span></dt>
+        <dd>
+          <code>{ code, message, status, body }</code> — structured error object.
+          Error codes include <code>AUTH_FAILED</code>, <code>RATE_LIMITED</code>,
+          <code>TIMEOUT</code>, <code>BAD_REQUEST</code>, etc.
+        </dd>
+      </dl>
+    </li>
+  </ol>
+
+  <h3>Details</h3>
+  <ul>
+    <li>Leave <em>IP / Domain</em> empty to look up the caller's IP address.</li>
+    <li>
+      Use <em>Include</em> checkboxes to add optional data modules.
+      <code>security</code> costs an extra 2 credits;
+      <code>abuse</code> costs an extra 1 credit.
+    </li>
+    <li>
+      <em>Fields</em> restricts the response to named fields
+      (e.g. <code>location.city,asn.organization</code>).
+    </li>
+    <li>
+      <em>Excludes</em> removes fields or whole objects
+      (e.g. <code>currency,location.continent_code</code>).
+    </li>
+    <li>Failed requests are retried up to 3 times with exponential back-off.</li>
+  </ul>
+
+  <h3>References</h3>
+  <ul>
+    <li>
+      <a href="https://ipgeolocation.io/documentation/ip-location-api.html" target="_blank">
+        IP Geolocation API documentation
+      </a>
+    </li>
+  </ul>
+</script>

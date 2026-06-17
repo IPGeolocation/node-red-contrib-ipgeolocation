@@ -1,0 +1,72 @@
+<!-- ============================================================
+     ipgeo-config.html
+     Configuration node editor template + help panel
+     ============================================================ -->
+
+<script type="text/javascript">
+  RED.nodes.registerType('ipgeo-config', {
+    category: 'config',
+    defaults: {
+      name: { value: 'IPGeolocation.io' }
+    },
+    credentials: {
+      apiKey: { type: 'password' }
+    },
+    label: function () {
+      return this.name || 'IPGeolocation.io';
+    },
+    oneditprepare: function () {
+      // Show a tick/cross indicator based on whether a key is already saved
+      const hasKey = this.credentials.has_apiKey;
+      $('#node-config-input-apiKey').attr(
+        'placeholder',
+        hasKey ? '●●●●●●●● (saved)' : 'Paste your API key here'
+      );
+    }
+  });
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-config">
+  <div class="form-row">
+    <label for="node-config-input-name">
+      <i class="fa fa-tag"></i>&nbsp;Name
+    </label>
+    <input type="text" id="node-config-input-name"
+           placeholder="e.g. My IPGeo Key" style="width:70%"/>
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-apiKey">
+      <i class="fa fa-key"></i>&nbsp;API Key
+    </label>
+    <input type="password" id="node-config-input-apiKey"
+           style="width:70%"/>
+    <div style="margin-top:6px;font-size:0.85em;color:#888;">
+      Get your free key at
+      <a href="https://app.ipgeolocation.io/signup" target="_blank">
+        ipgeolocation.io
+      </a>.
+      The key is stored encrypted and never exported in flow JSON.
+    </div>
+  </div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-config">
+  <p>
+    Stores your <strong>IPGeolocation.io API key</strong> securely as a
+    Node-RED credential.  All IPGeo nodes share this config node so you
+    only need to enter the key once.
+  </p>
+  <h3>How to get an API key</h3>
+  <ol>
+    <li>Sign up at <a href="https://app.ipgeolocation.io/signup" target="_blank">ipgeolocation.io</a>.</li>
+    <li>Log in, open the <strong>Dashboard</strong>, and copy your API key.</li>
+    <li>Paste it into the <em>API Key</em> field above and click <strong>Add</strong>.</li>
+  </ol>
+  <p>
+    The key is stored using Node-RED's credential store and is <strong>never
+    included</strong> in exported flow JSON.
+  </p>
+</script>

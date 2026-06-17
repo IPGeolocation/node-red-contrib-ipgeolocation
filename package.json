@@ -1,0 +1,72 @@
+{
+  "name": "node-red-contrib-ipgeolocation",
+  "version": "1.0.0",
+  "description": "Node-RED nodes for the IPGeolocation.io v3 API: IP geolocation, security and threat intelligence (VPN, proxy, and TOR detection), abuse contacts, ASN lookup, bulk IP processing, timezone, astronomy, and user-agent parsing.",
+  "keywords": [
+    "node-red",
+    "ipgeolocation",
+    "geolocation",
+    "ip-lookup",
+    "timezone",
+    "astronomy",
+    "user-agent",
+    "security",
+    "ip-intelligence"
+  ],
+  "author": {
+    "name": "IPGeolocation.io"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/IPGeolocation/node-red-contrib-ipgeolocation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IPGeolocation/node-red-contrib-ipgeolocation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/IPGeolocation/node-red-contrib-ipgeolocation/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "node-red": {
+    "version": ">=2.0.0",
+    "nodes": {
+      "ipgeo-config": "nodes/ipgeo-config.js",
+      "ipgeo-lookup": "nodes/ipgeo-lookup.js",
+      "ipgeo-bulk": "nodes/ipgeo-bulk.js",
+      "ipgeo-security": "nodes/ipgeo-security.js",
+      "ipgeo-bulk-security": "nodes/ipgeo-bulk-security.js",
+      "ipgeo-abuse": "nodes/ipgeo-abuse.js",
+      "ipgeo-asn": "nodes/ipgeo-asn.js",
+      "ipgeo-timezone": "nodes/ipgeo-timezone.js",
+      "ipgeo-astronomy": "nodes/ipgeo-astronomy.js",
+      "ipgeo-useragent": "nodes/ipgeo-useragent.js"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.18.0"
+  },
+  "devDependencies": {
+    "@node-red/editor-client": "^3.1.9",
+    "mocha": "^10.8.2",
+    "nock": "^13.5.6",
+    "node-red": "^3.1.15",
+    "node-red-node-test-helper": "^0.3.6",
+    "nyc": "^15.1.0",
+    "should": "^13.2.3",
+    "sinon": "^17.0.1"
+  },
+  "main": "index.js",
+  "files": [
+    "nodes/",
+    "examples/",
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "mocha",
+    "test:watch": "mocha --watch",
+    "coverage": "nyc --reporter=text --reporter=html mocha",
+    "prepublishOnly": "npm test"
+  }
+}

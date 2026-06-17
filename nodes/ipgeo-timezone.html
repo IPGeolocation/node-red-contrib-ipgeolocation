@@ -1,0 +1,201 @@
+<!-- ============================================================
+     ipgeo-timezone.html
+     Timezone lookup node with 7-mode editor
+     ============================================================ -->
+
+<script type="text/javascript">
+(function () {
+  'use strict';
+
+  RED.nodes.registerType('ipgeo-timezone', {
+    category:    'IPGeolocation',
+    color:       '#5da0d0',
+    icon:        'font-awesome/fa-clock-o',
+    paletteLabel:'ipgeo timezone',
+
+    defaults: {
+      name:       { value: '' },
+      server:     { value: '', type: 'ipgeo-config', required: true },
+      mode:       { value: 'tz' },
+      inputType:  { value: 'str' },
+      inputValue: { value: '' },
+      latType:    { value: 'str' },
+      latValue:   { value: '' },
+      lngType:    { value: 'str' },
+      lngValue:   { value: '' },
+      outputProp: { value: 'payload' },
+      outputType: { value: 'msg' },
+      twoOutputs: { value: true },
+    },
+
+    inputs:  1,
+    outputs: 2,
+    outputLabels: function (idx) { return idx === 0 ? 'success' : 'error'; },
+
+    label: function () {
+      return this.name ||
+        'ipgeo timezone (' + (this.mode || 'tz') + ')';
+    },
+
+    oneditprepare: function () {
+      const node = this;
+
+      // ── Mode selector — show/hide input rows ───────────────────────────
+      function updateModeRows() {
+        const mode = $('#node-input-mode').val();
+        $('#ipgeo-tz-single-row').toggle(mode !== 'coords');
+        $('#ipgeo-tz-coords-rows').toggle(mode === 'coords');
+
+        // Update placeholder text based on mode
+        const placeholders = {
+          tz:       'e.g. America/New_York',
+          ip:       'e.g. 8.8.8.8',
+          location: 'e.g. New York, USA',
+          iata:     'e.g. JFK',
+          icao:     'e.g. KJFK',
+          unlocode: 'e.g. USNYC',
+        };
+        const p = placeholders[mode] || '';
+        $('#node-input-inputValue').attr('placeholder', p);
+      }
+
+      $('#node-input-mode').val(node.mode || 'tz').on('change', updateModeRows);
+
+      // ── Single-value typed input ───────────────────────────────────────
+      $('#node-input-inputValue').typedInput({
+        default:   'str',
+        typeField: '#node-input-inputType',
+        types:     ['msg', 'flow', 'global', 'str'],
+      });
+
+      // ── Coords typed inputs ────────────────────────────────────────────
+      $('#node-input-latValue').typedInput({
+        default:   'str',
+        typeField: '#node-input-latType',
+        types:     ['msg', 'flow', 'global', 'str', 'num'],
+      });
+      $('#node-input-lngValue').typedInput({
+        default:   'str',
+        typeField: '#node-input-lngType',
+        types:     ['msg', 'flow', 'global', 'str', 'num'],
+      });
+
+      // ── Output property ────────────────────────────────────────────────
+      $('#node-input-outputProp').typedInput({
+        default:   'msg',
+        typeField: '#node-input-outputType',
+        types:     ['msg', 'flow', 'global'],
+      });
+
+      $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+
+      updateModeRows();
+    },
+
+    oneditsave: function () {
+      this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+    },
+  });
+}());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-timezone">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+    <input type="text" id="node-input-name" placeholder="ipgeo timezone" style="width:70%"/>
+  </div>
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+    <input type="text" id="node-input-server" style="width:70%"/>
+  </div>
+  <hr/>
+
+  <!-- Lookup mode selector -->
+  <div class="form-row">
+    <label for="node-input-mode"><i class="fa fa-search"></i>&nbsp;Lookup by</label>
+    <select id="node-input-mode" style="width:70%">
+      <option value="tz">Timezone Name (tz)</option>
+      <option value="ip">IP Address (ip)</option>
+      <option value="location">Address / City (location)</option>
+      <option value="coords">Coordinates (lat + long)</option>
+      <option value="iata">IATA Airport Code</option>
+      <option value="icao">ICAO Airport Code</option>
+      <option value="unlocode">UN/LOCODE</option>
+    </select>
+  </div>
+
+  <!-- Single value row (all modes except coords) -->
+  <div id="ipgeo-tz-single-row" class="form-row">
+    <label for="node-input-inputValue"><i class="fa fa-pencil"></i>&nbsp;Value</label>
+    <input type="text" id="node-input-inputValue" style="width:70%"/>
+    <input type="hidden" id="node-input-inputType"/>
+  </div>
+
+  <!-- Coordinates rows -->
+  <div id="ipgeo-tz-coords-rows">
+    <div class="form-row">
+      <label for="node-input-latValue"><i class="fa fa-arrows-v"></i>&nbsp;Latitude</label>
+      <input type="text" id="node-input-latValue" placeholder="e.g. 40.7128" style="width:70%"/>
+      <input type="hidden" id="node-input-latType"/>
+    </div>
+    <div class="form-row">
+      <label for="node-input-lngValue"><i class="fa fa-arrows-h"></i>&nbsp;Longitude</label>
+      <input type="text" id="node-input-lngValue" placeholder="e.g. -74.0060" style="width:70%"/>
+      <input type="hidden" id="node-input-lngType"/>
+    </div>
+  </div>
+
+  <hr/>
+  <div class="form-row">
+    <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+    <input type="text" id="node-input-outputProp" style="width:70%"/>
+    <input type="hidden" id="node-input-outputType"/>
+  </div>
+  <div class="form-row">
+    <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+    <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+    <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+      Use second output for errors
+    </label>
+  </div>
+</script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-timezone">
+  <p>
+    Retrieves current date, time, and timezone information from the
+    <strong>IPGeolocation.io Timezone API</strong>.
+  </p>
+
+  <h3>Lookup Modes</h3>
+  <ul>
+    <li><strong>Timezone Name</strong> — IANA name, e.g. <code>America/New_York</code></li>
+    <li><strong>IP Address</strong> — any IPv4 or IPv6 address</li>
+    <li><strong>Address / City</strong> — free text, e.g. <code>Paris, France</code></li>
+    <li><strong>Coordinates</strong> — decimal lat &amp; long</li>
+    <li><strong>IATA</strong> — airport code, e.g. <code>LHR</code></li>
+    <li><strong>ICAO</strong> — airport code, e.g. <code>EGLL</code></li>
+    <li><strong>UN/LOCODE</strong> — e.g. <code>GBLON</code></li>
+  </ul>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>
+      Contains a <code>time_zone</code> object with fields:
+      <code>name</code>, <code>offset</code>, <code>date_time</code>,
+      <code>current_time</code>, <code>is_dst</code>, <code>dst_start</code>,
+      <code>dst_end</code>, and more.
+    </dd>
+  </dl>
+
+  <h3>References</h3>
+  <ul>
+    <li>
+      <a href="https://ipgeolocation.io/documentation/timezone-api.html" target="_blank">
+        Timezone API documentation
+      </a>
+    </li>
+  </ul>
+</script>

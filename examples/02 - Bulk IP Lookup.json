@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ipgeo_ex_bulk",
+    "type": "tab",
+    "label": "IPGeo: Bulk Lookup",
+    "disabled": false,
+    "info": "Geolocate many IPs in one request. The inject sends an array of IPs on msg.payload; the bulk node POSTs them and returns an array of results."
+  },
+  {
+    "id": "cmt",
+    "type": "comment",
+    "z": "ipgeo_ex_bulk",
+    "name": "\u2500\u2500 IPGeo: Bulk Lookup \u2500\u2500",
+    "info": "Set up: after importing, open the **IPGeolocation API** config node and paste your API key.\n\nGeolocate many IPs in one request. The inject sends an array of IPs on msg.payload; the bulk node POSTs them and returns an array of results.",
+    "x": 180,
+    "y": 40
+  },
+  {
+    "id": "trig",
+    "type": "inject",
+    "z": "ipgeo_ex_bulk",
+    "name": "Send 3 IPs",
+    "props": [
+      {
+        "p": "payload",
+        "v": "[\"8.8.8.8\",\"1.1.1.1\",\"208.67.222.222\"]",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "topic": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "ipgeo_node"
+      ]
+    ]
+  },
+  {
+    "type": "ipgeo-bulk",
+    "name": "Bulk Lookup",
+    "include": "",
+    "fields": "location.city,location.country_name",
+    "excludes": "",
+    "lang": "en",
+    "outputProp": "payload",
+    "outputType": "msg",
+    "twoOutputs": true,
+    "z": "ipgeo_ex_bulk",
+    "server": "ipgeo_cfg",
+    "x": 410,
+    "y": 120,
+    "wires": [
+      [
+        "dbg_ok"
+      ],
+      [
+        "dbg_err"
+      ]
+    ],
+    "id": "ipgeo_node"
+  },
+  {
+    "id": "dbg_ok",
+    "type": "debug",
+    "z": "ipgeo_ex_bulk",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 640,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dbg_err",
+    "type": "debug",
+    "z": "ipgeo_ex_bulk",
+    "name": "Error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "true",
+    "x": 640,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "ipgeo_cfg",
+    "type": "ipgeo-config",
+    "z": "ipgeo_ex_bulk",
+    "name": "IPGeolocation API"
+  }
+]

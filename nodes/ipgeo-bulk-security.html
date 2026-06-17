@@ -1,0 +1,166 @@
+<!-- ============================================================
+     ipgeo-bulk-security.html
+     Bulk IP security / threat lookup node
+     ============================================================ -->
+
+<script type="text/javascript">
+    (function () {
+        'use strict';
+
+        RED.nodes.registerType('ipgeo-bulk-security', {
+            category: 'IPGeolocation',
+            color: '#d9534f',
+            icon: 'font-awesome/fa-shield',
+            paletteLabel: 'ipgeo bulk security',
+
+            defaults: {
+                name: { value: '' },
+                server: { value: '', type: 'ipgeo-config', required: true },
+                fields: { value: '' },
+                excludes: { value: '' },
+                outputProp: { value: 'payload' },
+                outputType: { value: 'msg' },
+                twoOutputs: { value: true },
+            },
+
+            inputs: 1,
+            outputs: 2,
+
+            outputLabels: function (idx) {
+                return idx === 0 ? 'success (array)' : 'error';
+            },
+
+            label: function () {
+                return this.name || 'ipgeo bulk security';
+            },
+
+            oneditprepare: function () {
+                const node = this;
+
+                $('#node-input-outputProp').typedInput({
+                    default: 'msg',
+                    typeField: '#node-input-outputType',
+                    types: ['msg', 'flow', 'global'],
+                });
+
+                $('#node-input-twoOutputs').prop('checked', node.twoOutputs !== false);
+            },
+
+            oneditsave: function () {
+                this.twoOutputs = $('#node-input-twoOutputs').prop('checked');
+            },
+        });
+    }());
+</script>
+
+<!-- ── Edit template ── -->
+<script type="text/html" data-template-name="ipgeo-bulk-security">
+          <div class="form-row">
+            <label for="node-input-name"><i class="fa fa-tag"></i>&nbsp;Name</label>
+            <input type="text" id="node-input-name" placeholder="ipgeo bulk security" style="width:70%"/>
+          </div>
+          <div class="form-row">
+            <label for="node-input-server"><i class="fa fa-key"></i>&nbsp;API Config</label>
+            <input type="text" id="node-input-server" style="width:70%"/>
+          </div>
+          <hr/>
+          <div class="form-row">
+            <label for="node-input-fields"><i class="fa fa-filter"></i>&nbsp;Fields</label>
+            <input type="text" id="node-input-fields"
+                   placeholder="e.g. security.is_vpn,security.threat_score" style="width:70%"/>
+            <div style="margin-top:4px;font-size:0.82em;color:#888;">
+              Dot-notation, comma-separated. Returns only the listed fields from the
+              <code>security</code> object.
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="node-input-excludes"><i class="fa fa-minus-square"></i>&nbsp;Excludes</label>
+            <input type="text" id="node-input-excludes"
+                   placeholder="e.g. security.proxy_last_seen,security.vpn_last_seen" style="width:70%"/>
+            <div style="margin-top:4px;font-size:0.82em;color:#888;">
+              Dot-notation, comma-separated. Returns the full <code>security</code>
+              object except the listed fields. <code>ip</code> is always included
+              and cannot be excluded.
+            </div>
+          </div>
+          <hr/>
+          <div class="form-row">
+            <label for="node-input-outputProp"><i class="fa fa-sign-out"></i>&nbsp;Output to</label>
+            <input type="text" id="node-input-outputProp" style="width:70%"/>
+            <input type="hidden" id="node-input-outputType"/>
+          </div>
+          <div class="form-row">
+            <label><i class="fa fa-random"></i>&nbsp;Outputs</label>
+            <input type="checkbox" id="node-input-twoOutputs" style="width:auto;margin-right:6px"/>
+            <label for="node-input-twoOutputs" style="display:inline;font-weight:normal">
+              Use second output for errors
+            </label>
+          </div>
+        </script>
+
+<!-- ── Help panel ── -->
+<script type="text/html" data-help-name="ipgeo-bulk-security">
+          <p>
+            Performs a <strong>bulk IP security / threat lookup</strong> for up to
+            <strong>50,000</strong> IPv4/IPv6 addresses in a single HTTP POST request,
+            via the <code>/v3/security-bulk</code> endpoint.
+          </p>
+          <p>
+            For each IP, the response reports a threat score plus VPN, proxy,
+            residential proxy, Tor, relay, bot, spam, known-attacker and
+            cloud-provider signals.
+          </p>
+        
+          <h3>Input</h3>
+          <dl class="message-properties">
+            <dt>payload <span class="property-type">array | string</span></dt>
+            <dd>
+              An array of IPv4/IPv6 address strings, e.g.
+              <code>["2.56.188.34","2.56.188.35"]</code>. A comma-separated string is
+              also accepted and will be auto-split.
+              <strong>Domain names are not supported</strong> by the Security API.
+            </dd>
+          </dl>
+        
+          <h3>Output</h3>
+          <dl class="message-properties">
+            <dt>payload <span class="property-type">array</span></dt>
+            <dd>
+              Array of result objects in the same order as the input. Each entry is
+              either <code>{ ip, security: {...} }</code> for a valid IP, or
+              <code>{ message: "..." }</code> for a bogon, private, or malformed
+              entry — these do not fail the request.
+            </dd>
+            <dt class="optional">ipgeo_credits <span class="property-type">number</span></dt>
+            <dd>
+              Total credits consumed. Each valid IP costs 2 credits; bogon, private,
+              and malformed entries are not charged.
+            </dd>
+            <dt class="optional">ipgeo_invalid_count <span class="property-type">number</span></dt>
+            <dd>
+              Number of entries that came back as <code>{ message }</code> instead
+              of a security result. Only present when at least one entry was
+              invalid.
+            </dd>
+            <dt class="optional">ipgeo_invalid_messages <span class="property-type">array</span></dt>
+            <dd>
+              The <code>message</code> text for each invalid entry. Only present
+              when at least one entry was invalid.
+            </dd>
+          </dl>
+        
+          <h3>Notes</h3>
+          <ul>
+            <li>Only <code>fields</code> and <code>excludes</code> options are supported — there is no <code>include</code> or language option for the Security API.</li>
+            <li>Requires an API key on the configured server; bulk requests cannot be authenticated via Request Origin (CORS-only) setups.</li>
+          </ul>
+        
+          <h3>References</h3>
+          <ul>
+            <li>
+              <a href="https://ipgeolocation.io/documentation/ip-security-api.html#bulk-ip-security-lookup-endpoint" target="_blank">
+                Bulk IP Security Lookup documentation
+              </a>
+            </li>
+          </ul>
+        </script>
