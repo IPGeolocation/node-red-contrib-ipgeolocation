@@ -372,31 +372,44 @@ Tests use `mocha`, `node-red-node-test-helper`, `should`, and `nock`, with all H
 
 ---
 
-## FAQ
+## Frequently Asked Questions
 
-**How do I get an IPGeolocation.io API key?**
-Sign up for free at [app.ipgeolocation.io/signup](https://app.ipgeolocation.io/signup). The free tier is enough to evaluate every node in this package.
+<details>
+<summary><strong>How do I get an IPGeolocation.io API key?</strong></summary>
+Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free tier provides enough usage to evaluate every node included in this package.
+</details>
 
-**Is the API key safe in exported flows?**
-Yes. The key is stored as an encrypted Node-RED credential on the `ipgeo-config` node and is never included in exported flow JSON.
+<details>
+<summary><strong>Is the API key safe in exported flows?</strong></summary>
+Yes. The API key is stored as an encrypted Node-RED credential on the <code>ipgeo-config</code> node and is never included in exported flow JSON.
+</details>
 
-**Can I look up many IP addresses at once?**
-Yes. Use `ipgeo-bulk` for geolocation or `ipgeo-bulk-security` for threat scoring, each handling up to 50,000 IPs per request.
+<details>
+<summary><strong>Can I look up many IP addresses at once?</strong></summary>
+Yes. Use the <code>ipgeo-bulk</code> node for geolocation lookups or the <code>ipgeo-bulk-security</code> node for security and threat analysis. Both support processing up to 50,000 IP addresses in a single request.
+</details>
 
-**How do I detect VPNs, proxies, or TOR exit nodes?**
-Use `ipgeo-security` (or add the `security` include module to `ipgeo-lookup`) and inspect the proxy, VPN, TOR, and threat-score fields in the result.
+<details>
+<summary><strong>How do I detect VPNs, proxies, or TOR exit nodes?</strong></summary>
+Use the <code>ipgeo-security</code> node, or enable the <code>security</code> include module when using <code>ipgeo-lookup</code>. The response includes fields indicating proxy usage, VPN detection, TOR exit node status, and other threat-related information.
+</details>
 
-**Does it work behind a reverse proxy?**
-Yes. Read the client IP from `req.headers['x-forwarded-for']` and feed it into `ipgeo-lookup` as a dynamic `msg` input.
+<details>
+<summary><strong>Does it work behind a reverse proxy?</strong></summary>
+Yes. Read the client IP address from <code>req.headers['x-forwarded-for']</code> and pass it to <code>ipgeo-lookup</code> as a dynamic <code>msg</code> input to geolocate the original client.
+</details>
 
-**What happens when I hit a rate limit?**
-The node retries automatically with backoff and honors the `Retry-After` header. Persistent limits surface as a `RATE_LIMITED` error on the error output.
+<details>
+<summary><strong>What happens when I hit a rate limit?</strong></summary>
+The nodes automatically retry requests using exponential backoff and honor the <code>Retry-After</code> response header when provided. If the rate limit persists, the operation fails with a <code>RATE_LIMITED</code> error on the error output.
+</details>
+
 
 ---
 
 ## License
 
-[MIT](./LICENSE) (c) IPGeolocation.io
+[MIT](https://github.com/IPGeolocation/node-red-contrib-ipgeolocation/blob/main/LICENSE) (c) IPGeolocation.io
 
 ---
 
