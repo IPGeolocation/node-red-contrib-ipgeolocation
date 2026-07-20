@@ -32,9 +32,9 @@ const MODE_PARAM = {
   ip:       'ip',
   location: 'location',
   coords:   null,          // lat + lng are separate params
-  iata:     'iata',
-  icao:     'icao',
-  unlocode: 'location',    // UN/LO code is passed as 'location'
+  iata:     'iata_code',
+  icao:     'icao_code',
+  unlocode: 'lo_code',    // UN/LO code is passed as 'location'
 };
 
 module.exports = function (RED) {

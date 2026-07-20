@@ -223,9 +223,9 @@ Seven lookup modes:
 | IP address | `ip` | `8.8.8.8` |
 | Address / city | `location` | `Paris, France` |
 | Coordinates | `lat` + `long` | `48.8566`, `2.3522` |
-| IATA airport | `iata` | `CDG` |
-| ICAO airport | `icao` | `LFPG` |
-| UN/LOCODE | `location` | `FRPAR` |
+| IATA airport | `iata_code` | `CDG` |
+| ICAO airport | `icao_code` | `LFPG` |
+| UN/LOCODE | `lo_code` | `FRPAR` |
 
 Returns `INVALID_INPUT` when the value required for the chosen mode is missing.
 
