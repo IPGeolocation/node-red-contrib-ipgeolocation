@@ -47,12 +47,12 @@
     "axios": "^1.18.0"
   },
   "devDependencies": {
-    "@node-red/editor-client": "^3.1.9",
-    "mocha": "^10.8.2",
+    "@node-red/editor-client": "^4.1.15",
+    "mocha": "^12.0.2",
     "nock": "^13.5.6",
-    "node-red": "^3.1.15",
+    "node-red": "^4.1.15",
     "node-red-node-test-helper": "^0.3.6",
-    "nyc": "^15.1.0",
+    "nyc": "^18.0.0",
     "should": "^13.2.3",
     "sinon": "^17.0.1"
   },
@@ -68,5 +68,13 @@
     "test:watch": "mocha --watch",
     "coverage": "nyc --reporter=text --reporter=html mocha",
     "prepublishOnly": "npm test"
+  },
+  "overrides": {
+    "@node-red/registry": {
+      "npm": "^11.20.0"
+    },
+    "multer": "^2.4.0",
+    "express": "^4.22.3",
+    "qs": "^6.16.0"
   }
 }
