@@ -41,7 +41,7 @@ A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up t
 - **Bulk security lookup:** score large IP lists in a single call.
 - **Abuse contact lookup:** retrieve the abuse email, phone, and owning organization for an IP.
 - **ASN lookup:** resolve Autonomous System details by IP or AS number.
-- **Timezone API:** get timezone data by name, IP, coordinates, city, IATA code, ICAO code, or UN/LOCODE.
+- **Time Zone API:** get timezone data by name, IP, coordinates, city, IATA code, ICAO code, or UN/LOCODE.
 - **Astronomy API:** sunrise, sunset, moonrise, moonset, twilight phases, moon phase, and solar and lunar positions by coordinates, address, or IP.
 - **User-agent parser:** identify browser, device, OS, and engine from a user-agent string.
 - **Developer friendly:** dynamic `msg`, `flow`, and `global` inputs, an optional dedicated error output, automatic retries with exponential backoff, secure credential storage, and per-request credit reporting.
@@ -213,7 +213,7 @@ Looks up Autonomous System details. The **Query type** selects what gets sent:
 
 Supports an **Include** list (`peers`, `downstreams`, `upstreams`, and more), overridable per message via `msg.ipgeo_include`, plus **Fields** and **Excludes**.
 
-### ipgeo-timezone: timezone API
+### ipgeo-timezone: Time Zone API
 
 Seven lookup modes:
 
