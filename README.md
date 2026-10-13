@@ -8,7 +8,7 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D14-43853d.svg)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up the country, city, latitude, and longitude of any IP address or domain, score IPs for proxy, VPN, TOR, and bot risk, resolve ASN and abuse-contact data, parse user-agent strings, and fetch timezone and astronomy data, all from low-code Node-RED flows.
+A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up the country, city, latitude, and longitude of any IP address or domain, score IPs for proxy, VPN, Tor, and bot risk, resolve ASN and abuse-contact data, parse user-agent strings, and fetch timezone and astronomy data, all from low-code Node-RED flows.
 
 ---
 
@@ -37,7 +37,7 @@ A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up t
 
 - **Single IP geolocation:** resolve country, region, city, latitude, longitude, currency, and timezone for any IPv4, IPv6, or domain.
 - **Bulk IP geolocation:** process up to 50,000 IP addresses in one request.
-- **IP security and threat intelligence:** detect proxy, VPN, TOR, bot, and threat scores for fraud prevention and access control.
+- **IP security and threat intelligence:** detect proxy, VPN, Tor, bot, and threat scores for fraud prevention and access control.
 - **Bulk security lookup:** score large IP lists in a single call.
 - **Abuse contact lookup:** retrieve the abuse email, phone, and owning organization for an IP.
 - **ASN lookup:** resolve Autonomous System details by IP or AS number.
@@ -159,7 +159,7 @@ Include modules:
 
 | Module | Extra credits | Adds |
 |--------|:---:|------|
-| `security` | +2 | Proxy, VPN, TOR, bot, threat score |
+| `security` | +2 | Proxy, VPN, Tor, bot, threat score |
 | `abuse` | +1 | Abuse contact (email, phone, org) |
 | `user_agent` | 0 | Parsed user-agent |
 | `geo_accuracy` | 0 | Accuracy radius and confidence |
@@ -184,7 +184,7 @@ const resolved = msg.payload.filter(r => r.ip);
 
 ### ipgeo-security: IP security and threat intelligence
 
-Single-IP risk lookup: proxy, VPN, TOR, and bot detection plus a threat score, useful for fraud checks, login protection, and access control. Supports **Fields** and **Excludes**.
+Single-IP risk lookup: proxy, VPN, Tor, and bot detection plus a threat score, useful for fraud checks, login protection, and access control. Supports **Fields** and **Excludes**.
 
 ### ipgeo-bulk-security: bulk IP security
 
@@ -390,8 +390,8 @@ Yes. Use the <code>ipgeo-bulk</code> node for geolocation lookups or the <code>i
 </details>
 
 <details>
-<summary><strong>How do I detect VPNs, proxies, or TOR exit nodes?</strong></summary>
-Use the <code>ipgeo-security</code> node, or enable the <code>security</code> include module when using <code>ipgeo-lookup</code>. The response includes fields indicating proxy usage, VPN detection, TOR exit node status, and other threat-related information.
+<summary><strong>How do I detect VPNs, proxies, or Tor exit nodes?</strong></summary>
+Use the <code>ipgeo-security</code> node, or enable the <code>security</code> include module when using <code>ipgeo-lookup</code>. The response includes fields indicating proxy usage, VPN detection, Tor exit node status, and other threat-related information.
 </details>
 
 <details>
