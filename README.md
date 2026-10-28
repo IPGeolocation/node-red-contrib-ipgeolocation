@@ -287,7 +287,7 @@ On failure, the node sets `msg.error` with a typed `code`, a readable `message`,
 | `FORBIDDEN` | Plan restriction or origin not whitelisted (HTTP 403) |
 | `NOT_FOUND` | Endpoint or resource not found (HTTP 404) |
 | `VALIDATION` | Validation error (HTTP 422) |
-| `LOCKED` | Key locked, quota exceeded, or account suspended (HTTP 423) |
+| `LOCKED` | Private or bogon IP address (HTTP 423). Check that the input is a valid public IP and that your application resolved the visitor's address correctly. Localhost and private-network addresses cannot be geolocated. |
 | `RATE_LIMITED` | Too many requests (HTTP 429) |
 | `SERVER_ERROR` | API internal error (HTTP 500) |
 | `HTTP_ERROR` | Any other non-2xx status |

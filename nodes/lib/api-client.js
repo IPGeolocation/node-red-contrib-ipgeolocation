@@ -76,7 +76,7 @@ function mapAxiosError(err) {
       case 422: return new IPGeoError(
         `Unprocessable entity: ${apiMsg || 'Validation error'}`, 'VALIDATION', 422, data);
       case 423: return new IPGeoError(
-        `API key locked: ${apiMsg || 'Quota exceeded or account suspended'}`, 'LOCKED', 423, data);
+        `Private or bogon IP address: ${apiMsg || 'Localhost and private-network addresses cannot be geolocated'}`, 'LOCKED', 423, data);
       case 429: return new IPGeoError(
         `Rate limit exceeded: ${apiMsg || 'Too many requests'}`, 'RATE_LIMITED', 429, data);
       case 500: return new IPGeoError(
