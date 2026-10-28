@@ -376,7 +376,7 @@ Tests use `mocha`, `node-red-node-test-helper`, `should`, and `nock`, with all H
 
 <details>
 <summary><strong>How do I get an IPGeolocation.io API key?</strong></summary>
-Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free tier provides enough usage to evaluate every node included in this package.
+Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free plan covers the lookup, timezone, astronomy, and user-agent nodes, within free-plan fields and options. Bulk, security, dedicated ASN, and abuse nodes require a paid plan.
 </details>
 
 <details>
