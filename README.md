@@ -287,7 +287,7 @@ On failure, the node sets `msg.error` with a typed `code`, a readable `message`,
 | `FORBIDDEN` | Plan restriction or origin not whitelisted (HTTP 403) |
 | `NOT_FOUND` | Endpoint or resource not found (HTTP 404) |
 | `VALIDATION` | Validation error (HTTP 422) |
-| `LOCKED` | Key locked, quota exceeded, or account suspended (HTTP 423) |
+| `LOCKED` | Private or bogon IP address (HTTP 423). Check that the input is a valid public IP and that your application resolved the visitor's address correctly. Localhost and private-network addresses cannot be geolocated. |
 | `RATE_LIMITED` | Too many requests (HTTP 429) |
 | `SERVER_ERROR` | API internal error (HTTP 500) |
 | `HTTP_ERROR` | Any other non-2xx status |
@@ -376,7 +376,7 @@ Tests use `mocha`, `node-red-node-test-helper`, `should`, and `nock`, with all H
 
 <details>
 <summary><strong>How do I get an IPGeolocation.io API key?</strong></summary>
-Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free tier provides enough usage to evaluate every node included in this package.
+Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free plan covers the lookup, timezone, astronomy, and user-agent nodes, within free-plan fields and options. Bulk, security, dedicated ASN, and abuse nodes require a paid plan.
 </details>
 
 <details>
