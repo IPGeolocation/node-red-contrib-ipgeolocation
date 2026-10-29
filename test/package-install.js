@@ -61,15 +61,19 @@ try {
   verify(fresh, modern);
 
   if (modern) {
-    const upgrade = path.join(temporary, 'upgrade'); fs.mkdirSync(upgrade);
-    manifest(upgrade, '1.0.1', { axios: '1.19.0', 'follow-redirects': '1.16.0' });
-    npm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], upgrade);
-    assert.equal(versions(upgrade).axios, '1.19.0');
-    assert.equal(versions(upgrade).redirects, '1.16.0');
-    manifest(upgrade, `file:${archive}`);
-    npm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], upgrade);
-    verify(upgrade, true);
-    console.log('Upgrade from the older dependency tree passes the production audit.');
+    for (const previousAxios of ['1.19.0', '1.21.0']) {
+      const upgrade = path.join(temporary, `upgrade-${previousAxios}`); fs.mkdirSync(upgrade);
+      manifest(upgrade, '1.0.1', { axios: previousAxios, 'follow-redirects': '1.16.0' });
+      npm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], upgrade);
+      assert.equal(versions(upgrade).axios, previousAxios);
+      assert.equal(versions(upgrade).redirects, '1.16.0');
+      manifest(upgrade, `file:${archive}`);
+      npm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], upgrade);
+      // npm may retain an older redirect copy when Axios already satisfies the new range.
+      npm(['update', 'axios', 'follow-redirects', '--ignore-scripts', '--no-audit', '--no-fund'], upgrade);
+      verify(upgrade, true);
+      console.log(`Documented upgrade from Axios ${previousAxios} / follow-redirects 1.16.0 passes the production audit.`);
+    }
   }
 } finally {
   fs.rmSync(temporary, { recursive: true, force: true });
