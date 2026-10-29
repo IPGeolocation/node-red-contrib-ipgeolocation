@@ -1,0 +1,18 @@
+# Simulation scaffold. Add fault-injection scenarios under each mock, e.g.:
+#   scenarios:
+#     - overrides:
+#         conditions:
+#           latency: { delay_ms: 500 }
+# Then serve it with: postman simulation run <this file>
+
+id: 5a1801d2-8507-4c29-81fb-a1cc12a6c954
+simulation: node-red
+routing: path
+mocks:
+  - name: ipgeolocation
+    id: b480c1ae-1fda-4f36-a994-86da2ed9b9df
+    routeKey: ipgeolocation
+    origin:
+      - api.ipgeolocation.io
+      - redirect.ipgeolocation.test
+    path: ../../mocks/ipgeolocation/config.yaml

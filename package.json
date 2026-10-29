@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-ipgeolocation",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node-RED nodes for the IPGeolocation.io v3 API: IP geolocation, security and threat intelligence (VPN, proxy, and TOR detection), abuse contacts, ASN lookup, bulk IP processing, timezone, astronomy, and user-agent parsing.",
   "keywords": [
     "node-red",
@@ -44,13 +44,13 @@
     }
   },
   "dependencies": {
-    "axios": "^1.18.0"
+    "axios": "^1.21.0"
   },
   "devDependencies": {
-    "@node-red/editor-client": "^4.1.15",
+    "@node-red/editor-client": "^4.1.17",
     "mocha": "^12.0.2",
     "nock": "^13.5.6",
-    "node-red": "^4.1.15",
+    "node-red": "^4.1.17",
     "node-red-node-test-helper": "^0.3.6",
     "nyc": "^18.0.0",
     "should": "^13.2.3",
@@ -65,16 +65,20 @@
   ],
   "scripts": {
     "test": "mocha",
+    "test:http": "node test/run-http.js",
+    "test:package": "node test/package-install.js",
+    "audit:security": "node scripts/audit.js",
     "test:watch": "mocha --watch",
     "coverage": "nyc --reporter=text --reporter=html mocha",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test && npm run audit:security"
   },
   "overrides": {
     "@node-red/registry": {
-      "npm": "^11.20.0"
+      "npm": "^11.21.1"
     },
-    "multer": "^2.4.0",
+    "multer": "^2.5.0",
     "express": "^4.22.3",
-    "qs": "^6.16.0"
+    "qs": "^6.17.0",
+    "body-parser@^1": "^1.20.9"
   }
 }

@@ -91,6 +91,13 @@ cd ~/.node-red
 npm install node-red-contrib-ipgeolocation
 ```
 
+For an existing installation, update the package and refresh its HTTP dependencies in the Node-RED user directory:
+
+```bash
+npm install node-red-contrib-ipgeolocation@latest
+npm update axios follow-redirects
+```
+
 Restart Node-RED. All ten nodes appear under the **IPGeolocation** category in the palette.
 
 ---
@@ -363,12 +370,17 @@ Each node reports the real charge in `msg.ipgeo_credits`. See the [Credits Usage
 ## Development and testing
 
 ```bash
-npm install      # install dependencies
+npm ci           # install the locked dependencies
 npm test         # run the mocha test suite
 npm run coverage # run tests with an HTML and text coverage report
+npm run audit:security # check runtime and development dependencies
+npm run test:package   # test fresh installs and upgrades of the packed npm package
+npm run test:http      # test HTTPS behavior with the locally installed Postman CLI
 ```
 
 Tests use `mocha`, `node-red-node-test-helper`, `should`, and `nock`, with all HTTP fully mocked so the suite runs offline with no live API calls. Specs live in `test/**/*_spec.js` and cover the shared API client, the helpers, every node, and the bundled example flows.
+
+`test:http` starts a local Postman simulation and checks real HTTPS requests, redirects, retries and timeouts. It uses test credentials and stops the proxy when the checks finish. `test:package` requires registry access to verify fresh installations and upgrades from version 1.0.1, including an existing lock with current Axios and an older redirect dependency.
 
 ---
 
