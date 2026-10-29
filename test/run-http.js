@@ -8,7 +8,11 @@ async function main() {
   const proxy = spawn('postman', [
     'simulation', 'run', 'postman/simulations/node-red/simulation.yaml',
     '--proxy', '--proxy-port', '7011', '--no-history', '--log-format', 'json',
-  ], { cwd: path.resolve(__dirname, '..'), stdio: ['ignore', 'pipe', 'pipe'] });
+  ], {
+    cwd: path.resolve(__dirname, '..'), stdio: ['ignore', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32',
+  });
+  const closed = new Promise((resolve) => proxy.once('close', resolve));
   let output = '';
   let errors = '';
   let timer;
@@ -39,7 +43,21 @@ async function main() {
     if (process.exitCode) console.error(errors);
   } finally {
     clearTimeout(timer);
-    proxy.kill('SIGINT');
+    if (proxy.pid) {
+      // The npm-installed CLI launches a child; stop the entire proxy process group.
+      const stop = (signal) => {
+        try {
+          if (process.platform === 'win32') proxy.kill(signal);
+          else process.kill(-proxy.pid, signal);
+        } catch (err) {
+          if (err.code !== 'ESRCH') throw err;
+        }
+      };
+      const force = setTimeout(() => stop('SIGKILL'), 2000);
+      stop('SIGINT');
+      await closed;
+      clearTimeout(force);
+    }
   }
 }
 
