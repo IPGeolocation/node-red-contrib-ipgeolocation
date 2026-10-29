@@ -1,0 +1,10 @@
+version: 1
+name: ipgeolocation
+description: Local HTTP client regression checks
+origin:
+  - api.ipgeolocation.io
+  - redirect.ipgeolocation.test
+interceptRequests: true
+scenarios:
+  - name: default
+    path: default.js
