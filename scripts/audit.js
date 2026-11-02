@@ -4,6 +4,8 @@ const { spawnSync } = require('node:child_process');
 
 const bundledFindings = {
   'ip-address': { severity: 'moderate', ids: ['GHSA-rxp7-6hxx-x8q5'] },
+  glob: { severity: 'moderate', ids: ['GHSA-3g3m-2fjr-6pw4'] },
+  minimatch: { severity: 'moderate', ids: ['GHSA-g3hv-75wg-m249'] },
   undici: { severity: 'high', ids: [
     'GHSA-4qv8-2p9j-2685', 'GHSA-xjj6-f33q-929c', 'GHSA-2m5v-pch6-74hx',
     'GHSA-qrxm-fqhp-jwvm', 'GHSA-9fm3-97px-rjf6',
@@ -25,7 +27,9 @@ function isBundledDevelopmentFinding(name, report, lock, ancestors = []) {
     lock.packages['node_modules/npm'].dev === true && lock.packages[location]?.dev === true &&
     lock.packages[location].inBundle === true && finding.severity === policy.severity &&
     finding.nodes.length === 1 && finding.nodes[0] === location && finding.via.length > 0 &&
-    finding.via.every((item) => policy.ids.some((id) => item.url === `https://github.com/advisories/${id}`));
+    finding.via.every((item) => typeof item === 'string'
+      ? isBundledDevelopmentFinding(item, report, lock, [...ancestors, name])
+      : policy.ids.some((id) => item.url === `https://github.com/advisories/${id}`));
 }
 
 function checkAudit(report, lock) {
