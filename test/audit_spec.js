@@ -57,6 +57,20 @@ describe('dependency audit policy', function () {
     assert.equal(checkAudit(report({ npm: parent, 'ip-address': finding() }), lock()).length, 1);
   });
 
+  it('accepts a known bundled finding whose other causes are accepted bundled findings', function () {
+    const bundled = lock();
+    bundled.packages['node_modules/npm/node_modules/glob'] = { dev: true, inBundle: true };
+    bundled.packages['node_modules/npm/node_modules/minimatch'] = { dev: true, inBundle: true };
+    const minimatch = { severity: 'moderate', nodes: ['node_modules/npm/node_modules/minimatch'],
+      via: [{ url: 'https://github.com/advisories/GHSA-g3hv-75wg-m249' }] };
+    const glob = { severity: 'moderate', nodes: ['node_modules/npm/node_modules/glob'],
+      via: [{ url: 'https://github.com/advisories/GHSA-3g3m-2fjr-6pw4' }, 'minimatch'] };
+    assert.deepEqual(checkAudit(report({ glob, minimatch }), bundled), []);
+    const axios = { severity: 'moderate', nodes: ['node_modules/axios'], via: [{ url: 'https://github.com/advisories/new' }] };
+    glob.via[1] = 'axios';
+    assert.equal(checkAudit(report({ glob, minimatch, axios }), bundled).length, 2);
+  });
+
   it('rejects circular or production parent reports', function () {
     const parent = { severity: 'moderate', nodes: ['node_modules/npm'], via: ['npm'] };
     assert.equal(checkAudit(report({ npm: parent }), lock()).length, 1);
