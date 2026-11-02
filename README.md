@@ -340,7 +340,33 @@ return msg;
 
 ### Geolocate the visitor in an HTTP flow
 
-Configure `ipgeo-lookup` with **IP / Domain** as a `msg` property pointing at `req.headers['x-forwarded-for']` (behind a proxy) or `req.connection.remoteAddress` (direct).
+Give `ipgeo-lookup` one validated client IP. Do not map the raw `req.headers['x-forwarded-for']` chain: the node sends it as one value, for example `203.0.113.7, 10.0.0.2`, and any entry your own proxies did not add is whatever the client sent. Never let the input be empty either, because the API then looks up the caller's IP, which is your Node-RED server.
+
+Read the address from `msg.req.ip`. The **http in** node runs on Express, which sets `msg.req.ip` to a single address:
+
+- **Direct connection:** with the default settings, `msg.req.ip` is the socket's remote address.
+- **Behind a reverse proxy:** list your proxies under `httpServerOptions` in Node-RED's `settings.js`. Express then reads `X-Forwarded-For` from right to left, skips the trusted proxies, and uses the first address it does not trust. Do not set `"trust proxy": true`, which trusts every entry, including ones the client wrote.
+
+```javascript
+// settings.js: nginx on the same host as Node-RED, behind a load balancer at 10.0.0.2
+httpServerOptions: {
+    "trust proxy": ["loopback", "10.0.0.2"],
+},
+```
+
+Add a Function node with two outputs between **http in** and `ipgeo-lookup`. Wire output 1 to `ipgeo-lookup` and output 2 to a fallback such as an **http response**, then set **IP / Domain** to the `msg` property `ipgeo_ip`:
+
+```javascript
+let ip = msg.req.ip || "";
+if (ip.startsWith("::ffff:")) ip = ip.slice(7);  // IPv4 client on a dual-stack listener
+if (!/^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-f]*:[0-9a-f:.]+$/i.test(ip)) {
+    return [null, msg];  // not one IP address; an empty value would look up your server's IP
+}
+msg.ipgeo_ip = ip;
+return [msg, null];
+```
+
+If your proxy instead overwrites a dedicated header with the client address, for example nginx `proxy_set_header X-Real-IP $remote_addr;`, read `msg.req.headers['x-real-ip']` in the first line. Do this only when clients cannot reach Node-RED without passing through that proxy.
 
 ### Block proxies and VPNs at the edge
 
@@ -408,7 +434,7 @@ Use the <code>ipgeo-security</code> node, or enable the <code>security</code> in
 
 <details>
 <summary><strong>Does it work behind a reverse proxy?</strong></summary>
-Yes. Read the client IP address from <code>req.headers['x-forwarded-for']</code> and pass it to <code>ipgeo-lookup</code> as a dynamic <code>msg</code> input to geolocate the original client.
+Yes. List your proxies under <code>"trust proxy"</code> in <code>httpServerOptions</code> in Node-RED's <code>settings.js</code>. Express then sets <code>msg.req.ip</code> to one client address selected through those trusted proxies; check it in a Function node and pass it to <code>ipgeo-lookup</code> as a dynamic <code>msg</code> input. Do not pass the raw <code>X-Forwarded-For</code> header, which can hold several addresses, some of them written by the client. The "Geolocate the visitor in an HTTP flow" recipe shows the full setup.
 </details>
 
 <details>
