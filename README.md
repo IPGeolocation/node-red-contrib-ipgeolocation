@@ -1,6 +1,6 @@
 # node-red-contrib-ipgeolocation
 
- Node-RED nodes for the [IPGeolocation.io](https://ipgeolocation.io) v3 API: IP geolocation, security and threat intelligence, VPN and proxy detection, abuse contacts, ASN lookup, bulk IP processing, timezone, astronomy, and user-agent parsing.
+ Node-RED nodes for the [IPGeolocation.io](https://ipgeolocation.io) v3 API: IP geolocation, security and threat intelligence, VPN and proxy detection, abuse contacts, ASN lookup, bulk IP processing, time zone, astronomy, and user-agent parsing.
 
 [![npm version](https://img.shields.io/npm/v/node-red-contrib-ipgeolocation.svg)](https://www.npmjs.com/package/node-red-contrib-ipgeolocation)
 [![npm downloads](https://img.shields.io/npm/dm/node-red-contrib-ipgeolocation.svg)](https://www.npmjs.com/package/node-red-contrib-ipgeolocation)
@@ -8,7 +8,7 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D14-43853d.svg)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up the country, city, latitude, and longitude of any IP address or domain, score IPs for proxy, VPN, Tor, and bot risk, resolve ASN and abuse-contact data, parse user-agent strings, and fetch timezone and astronomy data, all from low-code Node-RED flows.
+A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up the country, city, latitude, and longitude of any IP address or domain, score IPs for proxy, VPN, Tor, and bot risk, resolve ASN and abuse-contact data, parse user-agent strings, and fetch time zone and astronomy data, all from low-code Node-RED flows.
 
 ---
 
@@ -35,13 +35,13 @@ A complete, production-ready set of **Node-RED IP geolocation nodes**. Look up t
 
 ## Features
 
-- **Single IP geolocation:** resolve country, region, city, latitude, longitude, currency, and timezone for any IPv4, IPv6, or domain.
+- **Single IP geolocation:** resolve country, region, city, latitude, longitude, currency, and time zone for any IPv4, IPv6, or domain.
 - **Bulk IP geolocation:** process up to 50,000 IP addresses in one request.
 - **IP security and threat intelligence:** detect proxy, VPN, Tor, bot, and threat scores for fraud prevention and access control.
 - **Bulk security lookup:** score large IP lists in a single call.
 - **Abuse contact lookup:** retrieve the abuse email, phone, and owning organization for an IP.
 - **ASN lookup:** resolve Autonomous System details by IP or AS number.
-- **Time Zone API:** get timezone data by name, IP, coordinates, city, IATA code, ICAO code, or UN/LOCODE.
+- **Time Zone API:** get time zone data by name, IP, coordinates, city, IATA code, ICAO code, or UN/LOCODE.
 - **Astronomy API:** sunrise, sunset, moonrise, moonset, twilight phases, moon phase, and solar and lunar positions by coordinates, address, or IP.
 - **User-agent parser:** identify browser, device, OS, and engine from a user-agent string.
 - **Developer friendly:** dynamic `msg`, `flow`, and `global` inputs, an optional dedicated error output, automatic retries with exponential backoff, secure credential storage, and per-request credit reporting.
@@ -414,7 +414,7 @@ Tests use `mocha`, `node-red-node-test-helper`, `should`, and `nock`, with all H
 
 <details>
 <summary><strong>How do I get an IPGeolocation.io API key?</strong></summary>
-Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free plan covers the lookup, timezone, astronomy, and user-agent nodes, within free-plan fields and options. Bulk, security, dedicated ASN, and abuse nodes require a paid plan.
+Sign up for a free account at <code>app.ipgeolocation.io/signup</code>. The free plan covers the lookup, time zone, astronomy, and user-agent nodes, within free-plan fields and options. Bulk, security, dedicated ASN, and abuse nodes require a paid plan.
 </details>
 
 <details>
