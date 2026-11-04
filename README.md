@@ -145,7 +145,7 @@ Uncheck **Use second output** to collapse to a single output and handle failures
 | `ipgeo-bulk-security` | `POST /v3/security-bulk` | Bulk security, up to 50,000 IPs |
 | `ipgeo-abuse` | `GET /v3/abuse` | Abuse contact details |
 | `ipgeo-asn` | `GET /v3/asn` | ASN details by IP or AS number |
-| `ipgeo-timezone` | `GET /v3/timezone` | Timezone by name, IP, coords, city, IATA, ICAO, UN/LOCODE |
+| `ipgeo-timezone` | `GET /v3/timezone` | Time zone by name, IP, coords, city, IATA, ICAO, UN/LOCODE |
 | `ipgeo-astronomy` | `GET /v3/astronomy` | Sun and moon data |
 | `ipgeo-useragent` | `GET /v3/user-agent` | User-agent parsing |
 
@@ -226,7 +226,7 @@ Seven lookup modes:
 
 | Mode | Parameter sent | Example |
 |------|----------------|---------|
-| Timezone name | `tz` | `America/New_York` |
+| Time zone name | `tz` | `America/New_York` |
 | IP address | `ip` | `8.8.8.8` |
 | Address / city | `location` | `Paris, France` |
 | Coordinates | `lat` + `long` | `48.8566`, `2.3522` |
