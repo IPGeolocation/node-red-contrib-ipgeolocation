@@ -8,7 +8,6 @@
  *  • Single Axios instance with base URL and sensible timeouts
  *  • Exponential-backoff retry for transient errors (5xx, ECONNRESET, ETIMEDOUT)
  *  • Structured error objects that every node can map to Node-RED status/done(err)
- *  • Rate-limit awareness (HTTP 429 → honour Retry-After header when present)
  *  • Credit-charge extraction from response headers
  */
 
@@ -23,8 +22,9 @@ const DEFAULT_TIMEOUT = 10_000;   // 10 s
 const MAX_RETRIES     = 3;
 const RETRY_DELAY_MS  = 500;      // base delay; doubles each attempt
 
-// HTTP status codes that are safe to retry (server-side transient faults)
-const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+// HTTP status codes that are safe to retry (server-side transient faults).
+// 429 is not one: it means no credits are left, and a retry cannot add credits.
+const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
 
 // ─── Error Classes ───────────────────────────────────────────────────────────
 
@@ -158,15 +158,7 @@ async function request(options) {
 
       // Handle retryable server-side errors
       if (RETRYABLE_STATUS.has(response.status) && attempt < maxRetries) {
-        let delay = RETRY_DELAY_MS * Math.pow(2, attempt);
-
-        // Honour Retry-After header for 429 responses
-        if (response.status === 429) {
-          const retryAfter = response.headers['retry-after'];
-          if (retryAfter) {
-            delay = Math.max(delay, Number(retryAfter) * 1000);
-          }
-        }
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempt);
 
         attempt++;
         await sleep(delay);
