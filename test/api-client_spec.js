@@ -136,15 +136,16 @@ describe('lib/api-client', function () {
       }
     });
 
-    it('honours the Retry-After header on 429 before succeeding', async function () {
-      this.timeout(5000);
-      nock(HOST).get('/v3/ipgeo').query(true)
-        .reply(429, { message: 'slow' }, { 'retry-after': '1' });
-      nock(HOST).get('/v3/ipgeo').query(true).reply(200, { ip: '2.2.2.2' });
-      const started = Date.now();
-      const { data } = await request({ method: 'GET', path: '/ipgeo' });
-      data.ip.should.equal('2.2.2.2');
-      (Date.now() - started).should.be.aboveOrEqual(900);
+    it('does not retry a 429, since no credits are left', async function () {
+      const scope = nock(HOST).get('/v3/ipgeo').query(true)
+        .reply(429, { message: 'no credits' }, { 'retry-after': '1' });
+      try {
+        await request({ method: 'GET', path: '/ipgeo', maxRetries: 3 });
+        throw new Error('should have thrown');
+      } catch (err) {
+        err.code.should.equal('RATE_LIMITED');
+      }
+      scope.isDone().should.be.true();
     });
   });
 });

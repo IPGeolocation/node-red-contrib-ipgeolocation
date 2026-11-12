@@ -303,7 +303,7 @@ On failure, the node sets `msg.error` with a typed `code`, a readable `message`,
 | `INVALID_INPUT` / `INVALID_MODE` | Missing or malformed node input |
 | `TOO_MANY_IPS` | Bulk request over the 50,000-IP limit |
 
-**Automatic retries.** Transient failures (HTTP 429, 500, 502, 503, 504, timeouts, and network errors) are retried up to 3 times with exponential backoff (500 ms, 1 s, 2 s). For HTTP 429, the `Retry-After` header is honored when present. The default request timeout is 10 seconds, and 30 seconds for the bulk endpoints.
+**Automatic retries.** Transient failures (HTTP 500, 502, 503, 504, timeouts, and network errors) are retried up to 3 times with exponential backoff (500 ms, 1 s, 2 s). HTTP 429 is not retried: it means no credits are left, and a retry cannot add credits. The default request timeout is 10 seconds, and 30 seconds for the bulk endpoints.
 
 ---
 
@@ -437,8 +437,8 @@ Yes. List your proxies under <code>"trust proxy"</code> in <code>httpServerOptio
 </details>
 
 <details>
-<summary><strong>What happens when I hit a rate limit?</strong></summary>
-The nodes automatically retry requests using exponential backoff and honor the <code>Retry-After</code> response header when provided. If the rate limit persists, the operation fails with a <code>RATE_LIMITED</code> error on the error output.
+<summary><strong>What happens when I run out of credits?</strong></summary>
+The API has no per-second rate limits. It returns HTTP 429 when no credits are left: the free plan's daily credits, or a paid plan's credits with overage off or at its cap. The nodes do not retry a 429, because a retry cannot add credits. The operation fails with a <code>RATE_LIMITED</code> error on the error output.
 </details>
 
 

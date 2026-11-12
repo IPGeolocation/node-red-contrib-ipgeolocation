@@ -19,10 +19,8 @@ async function main() {
   await assert.rejects(request({ path: '/ipgeo', params: { ...params, apiKey: 'BAD_KEY' }, maxRetries: 0 }),
     (err) => err instanceof IPGeoError && err.code === 'AUTH_FAILED' && err.status === 401);
 
-  const started = Date.now();
-  const rateLimited = await request({ path: '/ipgeo', params: { ...params, apiKey: `RATE_RETRY:${runId}` }, maxRetries: 1 });
-  assert.equal(rateLimited.data.ip, '1.1.1.1');
-  assert.ok(Date.now() - started >= 900, 'Retry-After must delay the retry');
+  await assert.rejects(request({ path: '/ipgeo', params: { ...params, apiKey: `RATE_RETRY:${runId}` }, maxRetries: 1 }),
+    (err) => err instanceof IPGeoError && err.code === 'RATE_LIMITED' && err.status === 429);
 
   const retried = await request({ path: '/ipgeo', params: { ...params, apiKey: `SERVER_RETRY:${runId}` }, maxRetries: 1 });
   assert.equal(retried.data.ip, '1.1.1.1');
