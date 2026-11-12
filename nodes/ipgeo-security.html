@@ -185,7 +185,7 @@
             <li>Leave <em>IP Address</em> empty to look up the caller's IP address.</li>
             <li>
               <strong>Domain names are not accepted</strong> — only IPv4/IPv6
-              addresses. Passing a domain returns a 401 from the API.
+              addresses. Passing a domain returns a 400 from the API.
             </li>
             <li>Every successful lookup costs a flat <strong>2 credits</strong>, regardless of fields/excludes used.</li>
             <li>
@@ -198,7 +198,7 @@
               top-level <code>ip</code> field is always present and cannot be excluded.
             </li>
             <li>
-              Bogon/private/malformed IPs are rejected with HTTP 423 and are not billed.
+              Bogon and private IPs are rejected with HTTP 423, malformed IPs with HTTP 400. Neither is billed.
             </li>
             <li>Failed requests are retried up to 3 times with exponential back-off.</li>
           </ul>

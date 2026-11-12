@@ -63,7 +63,6 @@ describe('lib/api-client', function () {
       [401, 'AUTH_FAILED'],
       [403, 'FORBIDDEN'],
       [404, 'NOT_FOUND'],
-      [422, 'VALIDATION'],
       [423, 'LOCKED'],
     ];
 

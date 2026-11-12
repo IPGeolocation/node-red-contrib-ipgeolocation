@@ -22,7 +22,7 @@ const STATUS = {
   OK:       { fill: 'green',  shape: 'dot',   text: 'ok' },
   ERROR:    { fill: 'red',    shape: 'ring',  text: 'error' },
   NO_KEY:   { fill: 'red',    shape: 'ring',  text: 'no API key' },
-  RATE_LIM: { fill: 'yellow', shape: 'ring',  text: 'rate limited' },
+  RATE_LIM: { fill: 'yellow', shape: 'ring',  text: 'no credits left' },
 };
 
 /**
