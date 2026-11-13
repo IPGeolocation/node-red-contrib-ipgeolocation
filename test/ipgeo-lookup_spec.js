@@ -94,6 +94,24 @@ describe('ipgeo-lookup node', function () {
     });
   });
 
+  it('sends Arabic and preserves Arabic response text', function (done) {
+    let query;
+    nock(API_HOST).get('/v3/ipgeo')
+      .query((value) => { query = value; return true; })
+      .reply(200, { ip: '8.8.8.8', location: { country_name: 'الولايات المتحدة' } });
+
+    helper.load(MODULES, flow({ ipValue: '8.8.8.8', lang: 'ar' }), CREDS, function () {
+      helper.getNode('ok').on('input', (msg) => {
+        try {
+          query.lang.should.equal('ar');
+          msg.payload.location.country_name.should.equal('الولايات المتحدة');
+          done();
+        } catch (e) { done(e); }
+      });
+      helper.getNode('n1').receive({});
+    });
+  });
+
   it('emits NO_API_KEY on the error output when no key is configured', function (done) {
     helper.load(MODULES, flow({ ipValue: '8.8.8.8' }), {}, function () {
       helper.getNode('err').on('input', (msg) => {

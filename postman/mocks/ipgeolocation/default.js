@@ -14,7 +14,8 @@ http.createServer((req, res) => {
   if (!['/v3/ipgeo', '/v3/ipgeo-bulk'].includes(url.pathname)) {
     return reply(501, { message: 'Endpoint not modeled' });
   }
-  if (!['TEST_KEY', 'BAD_KEY', 'RATE_RETRY', 'SERVER_RETRY', 'SLOW', 'REDIRECT', 'REDIRECT_TARGET'].includes(scenario)) {
+  if (!['TEST_KEY', 'BAD_KEY', 'RATE_RETRY', 'SERVER_RETRY', 'SLOW', 'REDIRECT', 'REDIRECT_TARGET',
+    'SAME_ORIGIN', 'SAME_ORIGIN_TARGET', 'BULK_REDIRECT_307', 'BULK_REDIRECT_308'].includes(scenario)) {
     return reply(401, { message: 'Invalid API key' });
   }
   if (scenario === 'BAD_KEY') return reply(401, { message: 'Invalid API key' });
@@ -33,6 +34,16 @@ http.createServer((req, res) => {
   if (scenario === 'REDIRECT') {
     return reply(302, {}, {
       Location: 'https://redirect.ipgeolocation.test/v3/ipgeo?apiKey=REDIRECT_TARGET&ip=1.1.1.1&fields=ip',
+    });
+  }
+  if (scenario === 'SAME_ORIGIN') {
+    return reply(302, {}, {
+      Location: '/v3/ipgeo?apiKey=SAME_ORIGIN_TARGET&ip=1.1.1.1&fields=ip',
+    });
+  }
+  if (scenario === 'BULK_REDIRECT_307' || scenario === 'BULK_REDIRECT_308') {
+    return reply(scenario === 'BULK_REDIRECT_307' ? 307 : 308, {}, {
+      Location: 'https://redirect.ipgeolocation.test/v3/ipgeo-bulk?apiKey=REDIRECT_TARGET',
     });
   }
   if (scenario === 'REDIRECT_TARGET' && (req.headers.authorization || req.headers.cookie)) {

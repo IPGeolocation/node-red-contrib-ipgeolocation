@@ -297,6 +297,7 @@ On failure, the node sets `msg.error` with a typed `code`, a readable `message`,
 | `RATE_LIMITED` | No credits left (HTTP 429). The API has no per-second rate limits |
 | `SERVER_ERROR` | API internal error (HTTP 500) |
 | `HTTP_ERROR` | Any other non-2xx status |
+| `REQUEST_ERROR` | Request setup failed, or a redirect to another server was blocked. |
 | `TIMEOUT` | Request timed out |
 | `NETWORK_ERROR` | DNS or connectivity failure |
 | `NO_RESPONSE` | Request sent but no response received |

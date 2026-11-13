@@ -11,11 +11,11 @@ assumptions:
     updated_at: '2026-10-29'
   - id: failure-and-redirect-behavior
     status: supported
-    claim: In the tested scenarios, the client maps 401 errors, honors Retry-After, retries a 503, maps a timeout and strips Authorization and Cookie on a redirect to another origin.
-    reason: The local stand-in controls the responses and rejects forwarded credentials at the redirect target.
-    verification: On 2026-10-29, all seven HTTP checks passed. Proxy requests included the 401, 429, 503 and cross-origin redirect paths. The timeout assertion used a delayed response.
+    claim: The client passes the local failure and redirect checks in test/api-client-http.js.
+    reason: Node 22 and 24 passed the updated checks. The stand-in controlled the responses, and proxy logs showed no request to the external redirect host.
+    verification: On 2026-10-29, all seven HTTP checks passed. Proxy requests included the 401, 429, 503 and cross-origin redirect paths. The timeout assertion used a delayed response. Those results cover the earlier behavior. On 2026-11-13, ten HTTP checks passed on Node 22.23.5 and 24.22.3. The client returned the first 429 without retrying, retried a 503, handled the delayed response as a timeout, followed a same-server redirect and blocked external GET and bulk POST redirects.
     source: test/api-client-http.js; test/run-http.js; postman/mocks/ipgeolocation/default.js
-    updated_at: '2026-10-29'
+    updated_at: '2026-11-13'
   - id: live-service-behavior
     status: unknown
     claim: These fixture checks establish current live provider responses or account permissions.
@@ -28,3 +28,7 @@ fingerprints:
     date: '2026-10-29'
     commit: c80fd234 plus dependency and regression-test changes in the working tree; node implementations unchanged.
     cli: Postman CLI 1.73.0; local Node 26.8.2; Axios 1.21.0; follow-redirects 1.16.2.
+  - id: dependency-update-1.1.1
+    date: '2026-11-13'
+    commit: The 1.1.1 candidate based on 8557b481, with dependency, redirect and regression-test changes in the working tree.
+    cli: Postman CLI 1.73.0; Node 22.23.5 and 24.22.3.

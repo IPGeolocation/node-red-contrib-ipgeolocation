@@ -28,12 +28,25 @@ async function main() {
   await assert.rejects(request({ path: '/ipgeo', params: { ...params, apiKey: 'SLOW' }, timeout: 25, maxRetries: 0 }),
     (err) => err instanceof IPGeoError && err.code === 'TIMEOUT');
 
-  const redirected = await request({
+  await assert.rejects(request({
     path: '/ipgeo', params: { ...params, apiKey: 'REDIRECT' }, maxRetries: 0,
     headers: { Authorization: 'Bearer test-only-secret', Cookie: 'test-only-cookie' },
+  }), (err) => err instanceof IPGeoError && err.code === 'REQUEST_ERROR');
+
+  const redirected = await request({
+    path: '/ipgeo', params: { ...params, apiKey: 'SAME_ORIGIN' }, maxRetries: 0,
   });
   assert.deepEqual(redirected.data, { ip: '1.1.1.1' });
-  console.log('7 HTTP integration checks passed: GET, POST, authentication, rate limiting, retries, timeout and redirect credential handling.');
+
+  for (const status of [307, 308]) {
+    await assert.rejects(request({
+      method: 'POST', path: '/ipgeo-bulk',
+      params: { ...params, apiKey: `BULK_REDIRECT_${status}` },
+      data: { ips: [...ips, ips[0]] },
+      headers: { 'X-Workflow-Header': 'test-only-value' },
+    }), (err) => err instanceof IPGeoError && err.code === 'REQUEST_ERROR');
+  }
+  console.log('10 HTTP integration checks passed: GET, POST, authentication, credits exhausted, retries, timeout, same-server redirect and blocked external redirects.');
 }
 
 main().catch((err) => {

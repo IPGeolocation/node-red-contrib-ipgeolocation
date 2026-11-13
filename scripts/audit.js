@@ -3,17 +3,12 @@
 const { spawnSync } = require('node:child_process');
 
 const bundledFindings = {
-  'ip-address': { severity: 'moderate', ids: ['GHSA-rxp7-6hxx-x8q5'] },
-  glob: { severity: 'moderate', ids: ['GHSA-3g3m-2fjr-6pw4'] },
-  minimatch: { severity: 'moderate', ids: ['GHSA-g3hv-75wg-m249'] },
-  undici: { severity: 'high', ids: [
-    'GHSA-4qv8-2p9j-2685', 'GHSA-xjj6-f33q-929c', 'GHSA-2m5v-pch6-74hx',
-    'GHSA-qrxm-fqhp-jwvm', 'GHSA-9fm3-97px-rjf6',
-  ] },
+  glob: { version: '13.0.6', severity: 'moderate', ids: ['GHSA-3g3m-2fjr-6pw4'] },
+  minimatch: { version: '10.2.5', severity: 'moderate', ids: ['GHSA-g3hv-75wg-m249'] },
 };
 
 function isBundledDevelopmentFinding(name, report, lock, ancestors = []) {
-  // shortcut: retain only npm 11.21.1's known development findings until its bundles are patched.
+  // shortcut: npm 11.21.2 still bundles these two affected development libraries; remove the exceptions when npm updates them.
   const finding = report.vulnerabilities[name];
   if (!finding || finding.severity === 'critical' || ancestors.includes(name) || finding.nodes.length === 0 ||
       !finding.nodes.every((node) => lock.packages[node]?.dev === true)) return false;
@@ -23,9 +18,10 @@ function isBundledDevelopmentFinding(name, report, lock, ancestors = []) {
   }
   const policy = bundledFindings[name];
   const location = `node_modules/npm/node_modules/${name}`;
-  return policy && lock.packages['node_modules/npm']?.version === '11.21.1' &&
+  return policy && lock.packages['node_modules/npm']?.version === '11.21.2' &&
     lock.packages['node_modules/npm'].dev === true && lock.packages[location]?.dev === true &&
-    lock.packages[location].inBundle === true && finding.severity === policy.severity &&
+    lock.packages[location].inBundle === true && lock.packages[location].version === policy.version &&
+    finding.severity === policy.severity &&
     finding.nodes.length === 1 && finding.nodes[0] === location && finding.via.length > 0 &&
     finding.via.every((item) => typeof item === 'string'
       ? isBundledDevelopmentFinding(item, report, lock, [...ancestors, name])

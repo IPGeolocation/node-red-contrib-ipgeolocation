@@ -60,6 +60,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @returns {IPGeoError}
  */
 function mapAxiosError(err) {
+  if (err.code === 'ERR_FR_REDIRECTION_FAILURE') {
+    return new IPGeoError('Request redirect was blocked.', 'REQUEST_ERROR');
+  }
+
   if (err.response) {
     const { status, data } = err.response;
     const apiMsg = (data && (data.message || data.error)) || '';
@@ -73,6 +77,8 @@ function mapAxiosError(err) {
         `Forbidden: ${apiMsg || "This server's IP is not on the API key's IP allow-list"}`, 'FORBIDDEN', 403, data);
       case 404: return new IPGeoError(
         `Resource not found: ${apiMsg || 'Endpoint does not exist'}`, 'NOT_FOUND', 404, data);
+      case 422: return new IPGeoError(
+        `Unprocessable entity: ${apiMsg || 'Validation error'}`, 'VALIDATION', 422, data);
       case 423: return new IPGeoError(
         `Private or bogon IP address: ${apiMsg || 'Localhost and private-network addresses cannot be geolocated'}`, 'LOCKED', 423, data);
       case 429: return new IPGeoError(
@@ -145,6 +151,12 @@ async function request(options) {
           ...headers,
         },
         timeout,
+        beforeRedirect: (_options, response, previous) => {
+          const destination = new URL(response.headers.location, previous.url);
+          if (destination.origin !== new URL(url).origin) {
+            throw new Error('Request redirect was blocked.');
+          }
+        },
         validateStatus: null, // We handle all status codes ourselves
       });
 
