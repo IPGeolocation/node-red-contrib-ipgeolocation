@@ -68,6 +68,32 @@ describe('ipgeo-bulk node', function () {
     });
   });
 
+  it('preserves all 50,000 Arabic bulk results in order', function (done) {
+    this.timeout(10000);
+    const ips = Array.from({ length: 50000 }, (_, index) =>
+      index % 2 ? '2001:4860:4860::8888' : '8.8.8.8');
+    const results = ips.map((ip) => ({ ip, location: { country_name: 'الولايات المتحدة' } }));
+    let body;
+    let query;
+    nock(API_HOST).post('/v3/ipgeo-bulk', (value) => { body = value; return true; })
+      .query((value) => { query = value; return true; })
+      .reply(200, results, { 'x-credits-charged': '50000' });
+
+    helper.load(MODULES, flow({ lang: 'ar' }), CREDS, function () {
+      helper.getNode('ok').on('input', (msg) => {
+        try {
+          query.lang.should.equal('ar');
+          body.ips.should.deepEqual(ips);
+          msg.payload.should.deepEqual(results);
+          msg.ipgeo_credits.should.equal(50000);
+          msg.marker.should.equal('keep');
+          done();
+        } catch (e) { done(e); }
+      });
+      helper.getNode('n1').receive({ payload: ips, marker: 'keep' });
+    });
+  });
+
   it('rejects more than 50,000 IPs with TOO_MANY_IPS', function (done) {
     helper.load(MODULES, flow(), CREDS, function () {
       helper.getNode('err').on('input', (msg) => {

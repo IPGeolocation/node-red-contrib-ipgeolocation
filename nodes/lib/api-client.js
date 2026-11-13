@@ -60,6 +60,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @returns {IPGeoError}
  */
 function mapAxiosError(err) {
+  if (err.code === 'ERR_FR_REDIRECTION_FAILURE') {
+    return new IPGeoError('Request redirect was blocked.', 'REQUEST_ERROR');
+  }
+
   if (err.response) {
     const { status, data } = err.response;
     const apiMsg = (data && (data.message || data.error)) || '';
@@ -145,6 +149,12 @@ async function request(options) {
           ...headers,
         },
         timeout,
+        beforeRedirect: (_options, response, previous) => {
+          const destination = new URL(response.headers.location, previous.url);
+          if (destination.origin !== new URL(url).origin) {
+            throw new Error('Request redirect was blocked.');
+          }
+        },
         validateStatus: null, // We handle all status codes ourselves
       });
 

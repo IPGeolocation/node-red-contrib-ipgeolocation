@@ -12,6 +12,7 @@
 'use strict';
 
 const nock = require('nock');
+const assert = require('node:assert/strict');
 require('should');
 
 const { request, IPGeoError, BASE_URL } = require('../nodes/lib/api-client');
@@ -111,6 +112,55 @@ describe('lib/api-client', function () {
         throw new Error('should have thrown');
       } catch (err) {
         err.code.should.equal('NETWORK_ERROR');
+      }
+    });
+  });
+
+  describe('redirect behaviour', function () {
+    it('keeps relative redirects on the API server working', async function () {
+      nock(HOST).get('/v3/ipgeo').query(true)
+        .reply(302, {}, { location: '/v3/lookup-result' });
+      nock(HOST).get('/v3/lookup-result')
+        .reply(200, { ip: '1.1.1.1' }, { 'x-credits-charged': '1' });
+
+      const result = await request({ path: '/ipgeo', params: { apiKey: 'TEST_KEY' } });
+      result.should.deepEqual({ data: { ip: '1.1.1.1' }, credits: 1 });
+    });
+
+    it('preserves a bulk body on a same-server 307 redirect', async function () {
+      const data = { ips: ['8.8.8.8', '2001:4860:4860::8888', '8.8.8.8'] };
+      nock(HOST).post('/v3/ipgeo-bulk', data).query(true)
+        .reply(307, {}, { location: '/v3/bulk-result' });
+      const target = nock(HOST).post('/v3/bulk-result', data)
+        .reply(200, data.ips.map((ip) => ({ ip })));
+
+      const result = await request({ method: 'POST', path: '/ipgeo-bulk', data });
+      result.data.should.deepEqual(data.ips.map((ip) => ({ ip })));
+      target.isDone().should.be.true();
+    });
+
+    it('blocks redirects that change protocol, host or port before sending data', async function () {
+      const data = { ips: ['8.8.8.8', '2001:4860:4860::8888', '8.8.8.8'] };
+      for (const [status, destination, method] of [
+        [302, 'https://redirect.ipgeolocation.test', 'GET'],
+        [307, 'https://redirect.ipgeolocation.test', 'POST'],
+        [308, 'https://redirect.ipgeolocation.test', 'POST'],
+        [302, 'http://api.ipgeolocation.io', 'GET'],
+        [307, 'https://api.ipgeolocation.io:8443', 'POST'],
+      ]) {
+        const path = method === 'POST' ? '/ipgeo-bulk' : '/ipgeo';
+        nock(HOST)[method.toLowerCase()](`/v3${path}`).query(true)
+          .reply(status, {}, { location: `${destination}/target` });
+        const target = nock(destination)[method.toLowerCase()]('/target')
+          .reply(200, { unexpected: true });
+
+        await assert.rejects(request({
+          method, path, data: method === 'POST' ? data : undefined,
+          params: { apiKey: 'TEST_KEY' },
+          headers: { 'X-Workflow-Header': 'test-only-value' },
+        }), (err) => err instanceof IPGeoError && err.code === 'REQUEST_ERROR' &&
+          err.message === 'Request redirect was blocked.');
+        target.isDone().should.be.false();
       }
     });
   });
