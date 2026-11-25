@@ -152,7 +152,7 @@
   <!-- Optional elevation -->
   <div class="form-row">
     <label for="node-input-elevationValue"><i class="fa fa-mountain"></i>&nbsp;Elevation</label>
-    <input type="text" id="node-input-elevationValue" placeholder="metres, 0 to 10000 (optional)" style="width:70%"/>
+    <input type="text" id="node-input-elevationValue" placeholder="Elevation in meters (optional)" style="width:70%"/>
     <input type="hidden" id="node-input-elevationType"/>
   </div>
 
@@ -209,7 +209,7 @@
     <dt class="optional">Time zone <span class="property-type">string</span></dt>
     <dd>IANA name; converts event times into this zone.</dd>
     <dt class="optional">Elevation <span class="property-type">number | string</span></dt>
-    <dd>Metres above sea level, 0 to 10000. Defaults to 0.</dd>
+    <dd>Elevation above sea level in meters. Negative values are allowed. The maximum is 10,000 meters. Leave it blank to use the nearest known city's elevation, or 0 if no elevation data is available.</dd>
     <dt class="optional">Language <span class="property-type">string</span></dt>
     <dd>Language for the <code>location</code> object (paid plans).</dd>
   </dl>

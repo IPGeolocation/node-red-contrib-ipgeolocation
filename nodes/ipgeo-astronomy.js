@@ -20,7 +20,7 @@
  * ──────────────────────────
  *  date       — "YYYY-MM-DD"; defaults to today at the location
  *  time_zone  — IANA timezone name; event times are converted to it
- *  elevation  — metres above sea level (0 to 10000); default 0
+ *  elevation  — meters above sea level, up to 10000; negatives allowed; blank = nearest known city's elevation (0 if none)
  *  lang       — response language for the location object (paid plans)
  *
  * Every value can be static (node config) or sourced dynamically from
@@ -67,7 +67,7 @@ module.exports = function (RED) {
     this.tzType      = config.tzType      || 'str';
     this.tzValue     = config.tzValue     || '';   // empty = API determines tz
     this.elevationType  = config.elevationType  || 'str';
-    this.elevationValue = config.elevationValue || ''; // empty = API default (0)
+    this.elevationValue = config.elevationValue || ''; // empty = API uses the nearest known city's elevation
     this.langType    = config.langType    || 'str';
     this.langValue   = config.langValue   || '';   // empty = API default (en)
     this.outputProp  = config.outputProp  || 'payload';
