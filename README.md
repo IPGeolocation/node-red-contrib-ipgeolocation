@@ -257,7 +257,7 @@ Optional parameters (all modes):
 |--------|-----------|-------------|
 | Date | `date` | `YYYY-MM-DD`; defaults to today at the location |
 | Time zone | `time_zone` | IANA name; converts all event times into this zone |
-| Elevation | `elevation` | meters above sea level, 0 to 10000; defaults to 0 |
+| Elevation | `elevation` | Elevation above sea level in meters. Negative values are allowed. The maximum is 10,000 meters. Leave it blank to use the nearest known city's elevation, or 0 if no elevation data is available. |
 | Language | `lang` | language for the `location` object (paid plans) |
 
 The response nests results under an `astronomy` object alongside a `location` object, so read values such as `payload.astronomy.sunrise` and `payload.location.city`.
